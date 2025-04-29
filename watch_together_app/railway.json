@@ -1,0 +1,20 @@
+{
+  "builds": [
+    {
+      "src": "client/",
+      "use": "@railway/build/vite"
+    },
+    {
+      "src": "server/",
+      "use": "@railway/build/node"
+    }
+  ],
+  "deployments": {
+    "client": {
+      "root": "client"
+    },
+    "server": {
+      "root": "server"
+    }
+  }
+}
