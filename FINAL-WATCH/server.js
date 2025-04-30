@@ -21,7 +21,7 @@ io.on('connection', (socket) => {
 
   socket.on('join', (room) => {
     socket.join(room);
-    console.log(User joined room: ${room});
+    console.log('User joined room: ${room}');
   });
 
   socket.on('chat', ({ room, msg }) => {
@@ -43,5 +43,5 @@ io.on('connection', (socket) => {
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-  console.log(Server running on http://localhost:${PORT});
+  console.log('Server running on http://localhost:${PORT}');
 });
