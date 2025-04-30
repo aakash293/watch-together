@@ -38,15 +38,17 @@
       overflow: hidden;
       margin-bottom: 20px;
     }
-    iframe {
+    video {
       width: 100%;
-      height: 540px;
-      border: none;
+      height: auto;
+      background: black;
     }
     .controls {
       display: flex;
       gap: 10px;
       margin-bottom: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
     }
     input[type="text"] {
       padding: 10px;
@@ -85,7 +87,7 @@
     .chat-input input {
       flex: 1;
     }
-    video {
+    video#localVideo {
       width: 200px;
       border-radius: 4px;
     }
@@ -95,14 +97,14 @@
   <header>Watch Together</header>
   <div class="container">
     <div class="controls">
-      <input type="text" id="videoLink" placeholder="Enter Google Drive Link" />
+      <input type="text" id="videoLink" placeholder="Paste direct video link (.mp4/.mkv)" />
       <button onclick="setVideoLink()">Set Video</button>
       <button onclick="playVideo()">Play</button>
       <button onclick="pauseVideo()">Pause</button>
     </div>
 
     <div class="video-wrapper">
-      <iframe id="videoFrame" allow="autoplay" allowfullscreen></iframe>
+      <video id="videoPlayer" controls></video>
     </div>
 
     <div class="chat-container">
@@ -126,39 +128,47 @@
     const roomId = urlParams.get('room');
     const isHost = urlParams.get('host') === '1';
     const presetVideo = urlParams.get('video');
-
+    const video = document.getElementById('videoPlayer');
     const socket = io();
     socket.emit('join', roomId);
 
-    const iframe = document.getElementById('videoFrame');
-
     function setVideoLink() {
       const link = document.getElementById('videoLink').value;
-      iframe.src = link;
+      video.src = link;
+      video.currentTime = 0;
       socket.emit('video-load', { room: roomId, link });
     }
 
     if (presetVideo) {
       document.getElementById('videoLink').value = presetVideo;
-      iframe.src = presetVideo;
+      video.src = presetVideo;
     }
 
     socket.on('video-load', data => {
-      iframe.src = data.link;
+      video.src = data.link;
+      video.currentTime = 0;
     });
 
     function playVideo() {
-      socket.emit('video-control', { room: roomId, action: 'play' });
+      video.play();
+      socket.emit('video-control', { room: roomId, action: 'play', time: video.currentTime });
     }
 
     function pauseVideo() {
-      socket.emit('video-control', { room: roomId, action: 'pause' });
+      video.pause();
+      socket.emit('video-control', { room: roomId, action: 'pause', time: video.currentTime });
     }
 
+    video.addEventListener('seeked', () => {
+      socket.emit('video-control', { room: roomId, action: 'seek', time: video.currentTime });
+    });
+
     socket.on('video-control', data => {
-      const vid = iframe.contentWindow;
-      if (data.action === 'play') vid.postMessage('play', '*');
-      if (data.action === 'pause') vid.postMessage('pause', '*');
+      if (Math.abs(video.currentTime - data.time) > 0.5) {
+        video.currentTime = data.time;
+      }
+      if (data.action === 'play') video.play();
+      if (data.action === 'pause') video.pause();
     });
 
     function sendMessage() {
