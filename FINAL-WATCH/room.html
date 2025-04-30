@@ -97,11 +97,28 @@
       margin-top: 20px;
     }
     .chat-box {
-      background-color: #222;
-      height: 200px;
-      overflow-y: scroll;
-      padding: 10px;
-      border-radius: 4px;
+      background-color: #1e1e1e;
+      height: 240px;
+      overflow-y: auto;
+      padding: 15px;
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      font-size: 15px;
+    }
+    .chat-msg {
+      background: #2c2c2c;
+      padding: 10px 14px;
+      border-radius: 8px;
+      align-self: flex-start;
+      max-width: 80%;
+      word-wrap: break-word;
+    }
+    .chat-msg.self {
+      background: #e50914;
+      color: white;
+      align-self: flex-end;
     }
     .chat-input {
       display: flex;
@@ -110,6 +127,10 @@
     }
     .chat-input input {
       flex: 1;
+      padding: 10px;
+      border-radius: 4px;
+      border: none;
+      font-size: 14px;
     }
     @media (max-width: 768px) {
       .camera-box video {
@@ -149,30 +170,22 @@
   <script>
     const urlParams = new URLSearchParams(window.location.search);
     const roomId = urlParams.get('room');
-    const isHost = urlParams.get('host') === '1';
-    const presetVideo = urlParams.get('video');
-    const video = document.getElementById('videoPlayer');
     const socket = io();
+    const video = document.getElementById('videoPlayer');
     const cameraGrid = document.getElementById('cameraGrid');
 
-    // Join room
     if (roomId) {
       socket.emit('join', roomId);
     } else {
       alert('Room ID missing. Please return to the home page.');
     }
 
-    // Video sync logic
+    // Video Sync
     function setVideoLink() {
       const link = document.getElementById('videoLink').value;
       video.src = link;
       video.currentTime = 0;
       socket.emit('video-load', { room: roomId, link });
-    }
-
-    if (presetVideo) {
-      document.getElementById('videoLink').value = presetVideo;
-      video.src = presetVideo;
     }
 
     socket.on('video-load', data => {
@@ -202,49 +215,115 @@
       if (data.action === 'pause') video.pause();
     });
 
-    // Chat logic
+    // Chat
     function sendMessage() {
       const msg = document.getElementById('chatInput').value;
-      socket.emit('chat', { room: roomId, msg });
-      document.getElementById('chatInput').value = '';
+      if (msg.trim() !== '') {
+        socket.emit('chat', { room: roomId, msg });
+        displayMessage(msg, true);
+        document.getElementById('chatInput').value = '';
+      }
     }
 
-    socket.on('chat', msg => {
+    function displayMessage(msg, self = false) {
       const chat = document.getElementById('chat');
       const div = document.createElement('div');
+      div.className = 'chat-msg' + (self ? ' self' : '');
       div.textContent = msg;
       chat.appendChild(div);
       chat.scrollTop = chat.scrollHeight;
-    });
+    }
 
-    // Camera feed logic
+    socket.on('chat', msg => displayMessage(msg));
+
+    // Multi-user camera feeds using signaling
     let localStream;
-    const localVideoId = socket.id;
+    const peers = {};
 
     async function startCamera() {
       try {
         localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-        addCameraFeed(localVideoId, localStream);
-      } catch (e) {
-        console.error('Camera error:', e);
+        addCameraFeed(socket.id, localStream, true);
+        socket.emit('ready-for-call', roomId);
+      } catch (err) {
+        console.error('Error accessing camera:', err);
       }
     }
 
-    function addCameraFeed(id, stream) {
-      let existing = document.getElementById(`vid-${id}`);
-      if (!existing) {
-        const container = document.createElement('div');
-        container.className = 'camera-box';
-        const videoEl = document.createElement('video');
-        videoEl.id = `vid-${id}`;
-        videoEl.autoplay = true;
-        videoEl.muted = (id === socket.id);
-        videoEl.playsInline = true;
-        videoEl.srcObject = stream;
-        container.appendChild(videoEl);
-        cameraGrid.appendChild(container);
-      }
+    function addCameraFeed(id, stream, isLocal = false) {
+      if (document.getElementById(`vid-${id}`)) return;
+      const container = document.createElement('div');
+      container.className = 'camera-box';
+      const video = document.createElement('video');
+      video.id = `vid-${id}`;
+      video.srcObject = stream;
+      video.autoplay = true;
+      video.playsInline = true;
+      if (isLocal) video.muted = true;
+      container.appendChild(video);
+      cameraGrid.appendChild(container);
     }
+
+    socket.on('user-connected', ({ id }) => {
+      const peer = new RTCPeerConnection();
+      localStream.getTracks().forEach(track => peer.addTrack(track, localStream));
+
+      peer.ontrack = e => {
+        addCameraFeed(id, e.streams[0]);
+      };
+
+      peer.onicecandidate = e => {
+        if (e.candidate) {
+          socket.emit('candidate', { to: id, candidate: e.candidate });
+        }
+      };
+
+      peers[id] = peer;
+
+      peer.createOffer().then(offer => {
+        peer.setLocalDescription(offer);
+        socket.emit('offer', { to: id, offer });
+      });
+    });
+
+    socket.on('offer', ({ from, offer }) => {
+      const peer = new RTCPeerConnection();
+      localStream.getTracks().forEach(track => peer.addTrack(track, localStream));
+
+      peer.ontrack = e => {
+        addCameraFeed(from, e.streams[0]);
+      };
+
+      peer.onicecandidate = e => {
+        if (e.candidate) {
+          socket.emit('candidate', { to: from, candidate: e.candidate });
+        }
+      };
+
+      peers[from] = peer;
+
+      peer.setRemoteDescription(offer).then(() => {
+        return peer.createAnswer();
+      }).then(answer => {
+        peer.setLocalDescription(answer);
+        socket.emit('answer', { to: from, answer });
+      });
+    });
+
+    socket.on('answer', ({ from, answer }) => {
+      peers[from]?.setRemoteDescription(answer);
+    });
+
+    socket.on('candidate', ({ from, candidate }) => {
+      peers[from]?.addIceCandidate(new RTCIceCandidate(candidate));
+    });
+
+    socket.on('user-disconnected', id => {
+      const vid = document.getElementById(`vid-${id}`);
+      if (vid) vid.parentElement.remove();
+      peers[id]?.close();
+      delete peers[id];
+    });
 
     startCamera();
   </script>
