@@ -3,74 +3,243 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Create or Join a Room</title>
+  <title>Watch Room</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
   <style>
     * {
+      margin: 0;
+      padding: 0;
       box-sizing: border-box;
     }
     body {
-      background-color: #141414;
-      color: white;
       font-family: 'Roboto', sans-serif;
+      background-color: #141414;
+      color: #fff;
+    }
+    header {
+      background-color: #000;
+      padding: 20px;
       text-align: center;
-      padding: 50px;
-    }
-    h1 {
+      font-size: 24px;
+      font-weight: bold;
       color: #e50914;
-      font-size: 36px;
-      margin-bottom: 40px;
     }
-    input, button {
-      padding: 12px;
-      font-size: 18px;
-      margin: 10px;
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+    .video-wrapper {
+      width: 100%;
+      max-width: 960px;
+      background-color: #000;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    video {
+      width: 100%;
+      height: auto;
+      background: black;
+    }
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    input[type="text"] {
+      padding: 10px;
+      width: 300px;
       border: none;
       border-radius: 4px;
     }
-    input {
-      width: 280px;
-    }
     button {
+      padding: 10px 20px;
       background-color: #e50914;
       color: white;
+      border: none;
+      border-radius: 4px;
       cursor: pointer;
     }
     button:hover {
       background-color: #f40612;
     }
-    #inviteLink {
+    .camera-chat-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 960px;
       margin-top: 20px;
-      color: #bbb;
-      font-size: 16px;
-      word-break: break-all;
+    }
+    .camera-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .camera-controls {
+      margin-top: 10px;
+    }
+    video#localVideo {
+      width: 320px;
+      height: 240px;
+      border-radius: 8px;
+      background: #000;
+    }
+    .chat-container {
+      width: 100%;
+      margin-top: 20px;
+    }
+    .chat-box {
+      background-color: #222;
+      height: 200px;
+      overflow-y: scroll;
+      padding: 10px;
+      border-radius: 4px;
+    }
+    .chat-input {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .chat-input input {
+      flex: 1;
     }
   </style>
 </head>
 <body>
-  <h1>Watch Together</h1>
-  <input id="roomInput" placeholder="Enter Room ID" />
-  <br>
-  <button onclick="createRoom()">Create Room</button>
-  <button onclick="joinRoom()">Join Room</button>
+  <header>Watch Together</header>
+  <div class="container">
+    <div class="controls">
+      <input type="text" id="videoLink" placeholder="Paste direct video link (.mp4/.mkv)" />
+      <button onclick="setVideoLink()">Set Video</button>
+      <button onclick="playVideo()">Play</button>
+      <button onclick="pauseVideo()">Pause</button>
+    </div>
 
-  <div id="inviteLink"></div>
+    <div class="video-wrapper">
+      <video id="videoPlayer" controls></video>
+    </div>
 
+    <div class="camera-chat-wrapper">
+      <div class="camera-container">
+        <h3>Camera Feed</h3>
+        <video id="localVideo" autoplay muted playsinline></video>
+        <div class="camera-controls">
+          <button onclick="toggleCamera()" id="cameraBtn">Turn Camera Off</button>
+        </div>
+      </div>
+
+      <div class="chat-container">
+        <h3>Chat</h3>
+        <div id="chat" class="chat-box"></div>
+        <div class="chat-input">
+          <input type="text" id="chatInput" placeholder="Type message...">
+          <button onclick="sendMessage()">Send</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
   <script>
-    function createRoom() {
-      const roomId = Math.random().toString(36).substring(2, 8);
-      const videoLink = encodeURIComponent("https://filetolink9494-4c4589f9ad14.herokuapp.com/266670/Permanent+Roommates+S03+E05+WebRip+480p+x265+HEVC+10bit+.mkv?hash=AgADpR");
-      const url = `${window.location.origin}/room.html?room=${roomId}&host=1&video=${videoLink}`;
-      document.getElementById('inviteLink').innerHTML = `Invite link: <br><a href="${url}" style="color:#f40612">${url}</a>`;
+    const urlParams = new URLSearchParams(window.location.search);
+    const roomId = urlParams.get('room');
+    const isHost = urlParams.get('host') === '1';
+    const presetVideo = urlParams.get('video');
+    const video = document.getElementById('videoPlayer');
+    const socket = io();
+    socket.emit('join', roomId);
+
+    function setVideoLink() {
+      const link = document.getElementById('videoLink').value;
+      video.src = link;
+      video.currentTime = 0;
+      socket.emit('video-load', { room: roomId, link });
     }
 
-    function joinRoom() {
-      const roomId = document.getElementById('roomInput').value.trim();
-      if (roomId) {
-        const url = `/room.html?room=${roomId}`;
-        window.location.href = url;
+    if (presetVideo) {
+      document.getElementById('videoLink').value = presetVideo;
+      video.src = presetVideo;
+    }
+
+    socket.on('video-load', data => {
+      video.src = data.link;
+      video.currentTime = 0;
+    });
+
+    function playVideo() {
+      video.play();
+      socket.emit('video-control', { room: roomId, action: 'play', time: video.currentTime });
+    }
+
+    function pauseVideo() {
+      video.pause();
+      socket.emit('video-control', { room: roomId, action: 'pause', time: video.currentTime });
+    }
+
+    video.addEventListener('seeked', () => {
+      socket.emit('video-control', { room: roomId, action: 'seek', time: video.currentTime });
+    });
+
+    socket.on('video-control', data => {
+      if (Math.abs(video.currentTime - data.time) > 0.5) {
+        video.currentTime = data.time;
+      }
+      if (data.action === 'play') video.play();
+      if (data.action === 'pause') video.pause();
+    });
+
+    function sendMessage() {
+      const msg = document.getElementById('chatInput').value;
+      socket.emit('chat', { room: roomId, msg });
+      document.getElementById('chatInput').value = '';
+    }
+
+    socket.on('chat', msg => {
+      const chat = document.getElementById('chat');
+      const div = document.createElement('div');
+      div.textContent = msg;
+      chat.appendChild(div);
+      chat.scrollTop = chat.scrollHeight;
+    });
+
+    let localStream;
+    const localVideo = document.getElementById('localVideo');
+    const cameraBtn = document.getElementById('cameraBtn');
+
+    async function startCamera() {
+      try {
+        localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        localVideo.srcObject = localStream;
+      } catch (e) {
+        console.error('Camera error:', e);
       }
     }
+
+    function stopCamera() {
+      if (localStream) {
+        localStream.getTracks().forEach(track => track.stop());
+        localStream = null;
+        localVideo.srcObject = null;
+      }
+    }
+
+    function toggleCamera() {
+      if (localStream) {
+        stopCamera();
+        cameraBtn.textContent = 'Turn Camera On';
+      } else {
+        startCamera();
+        cameraBtn.textContent = 'Turn Camera Off';
+      }
+    }
+
+    // Start camera on load
+    startCamera();
   </script>
 </body>
 </html>
