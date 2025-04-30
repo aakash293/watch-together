@@ -1,0 +1,16 @@
+{
+    "name": "movie-sync-room",
+    "version": "1.0.0",
+    "description": "Watch movies together with real-time video sync, chat, and cameras",
+    "main": "server.js",
+    "scripts": {
+      "start": "node server.js"
+    },
+    "keywords": ["video", "sync", "socket.io", "watch-together", "express"],
+    "author": "Your Name",
+    "license": "MIT",
+    "dependencies": {
+      "express": "^4.18.2",
+      "socket.io": "^4.7.2"
+    }
+  }

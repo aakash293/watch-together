@@ -1,0 +1,33 @@
+<!-- index.html - Landing page for host and join -->
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Movie Sync Room</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; padding: 50px; }
+    input, button { margin: 10px; padding: 10px; font-size: 16px; }
+  </style>
+</head>
+<body>
+  <h1>Create or Join a Room</h1>
+  <input id="roomInput" placeholder="Enter Room ID" />
+  <button onclick="createRoom()">Create Room</button>
+  <button onclick="joinRoom()">Join Room</button>
+
+  <script>
+    function createRoom() {
+      const roomId = Math.random().toString(36).substring(2, 8);
+      window.location.href = '/room.html?room=${roomId}&host=1';
+    }
+    function joinRoom() {
+      const roomId = document.getElementById('roomInput').value.trim();
+      if (roomId) window.location.href = '/room.html?room=${roomId}';
+    }
+  </script>
+</body>
+</html>
+
+
+
+
+
