@@ -1,1 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create or Join Room</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Roboto', sans-serif;
+      background-color: #141414;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      text-align: center;
+    }
+    h1 {
+      font-size: 2.5rem;
+      color: #e50914;
+      margin-bottom: 40px;
+    }
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      width: 90%;
+      max-width: 400px;
+    }
+    input[type="text"] {
+      padding: 14px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 5px;
+    }
+    button {
+      padding: 14px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 5px;
+      background-color: #e50914;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #f40612;
+    }
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Watch Together</h1>
+  <div class="input-group">
+    <input type="text" id="roomInput" placeholder="Enter Room ID" />
+    <button onclick="createRoom()">Create Room</button>
+    <button onclick="joinRoom()">Join Room</button>
+  </div>
+
+  <script>
+    function createRoom() {
+      const roomId = Math.random().toString(36).substring(2, 8);
+      const url = `/room.html?room=${roomId}&host=1`;
+      window.location.href = url;
+    }
+
+    function joinRoom() {
+      const roomId = document.getElementById('roomInput').value.trim();
+      if (roomId) {
+        const url = `/room.html?room=${roomId}`;
+        window.location.href = url;
+      }
+    }
+  </script>
+</body>
+</html>
 
