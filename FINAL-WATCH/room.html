@@ -67,9 +67,30 @@
     button:hover {
       background-color: #f40612;
     }
-    .chat-container, .camera-container {
+    .camera-chat-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       width: 100%;
       max-width: 960px;
+      margin-top: 20px;
+    }
+    .camera-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .camera-controls {
+      margin-top: 10px;
+    }
+    video#localVideo {
+      width: 320px;
+      height: 240px;
+      border-radius: 8px;
+      background: #000;
+    }
+    .chat-container {
+      width: 100%;
       margin-top: 20px;
     }
     .chat-box {
@@ -87,10 +108,6 @@
     .chat-input input {
       flex: 1;
     }
-    video#localVideo {
-      width: 200px;
-      border-radius: 4px;
-    }
   </style>
 </head>
 <body>
@@ -107,18 +124,23 @@
       <video id="videoPlayer" controls></video>
     </div>
 
-    <div class="chat-container">
-      <h3>Chat</h3>
-      <div id="chat" class="chat-box"></div>
-      <div class="chat-input">
-        <input type="text" id="chatInput" placeholder="Type message...">
-        <button onclick="sendMessage()">Send</button>
+    <div class="camera-chat-wrapper">
+      <div class="camera-container">
+        <h3>Camera Feed</h3>
+        <video id="localVideo" autoplay muted playsinline></video>
+        <div class="camera-controls">
+          <button onclick="toggleCamera()" id="cameraBtn">Turn Camera Off</button>
+        </div>
       </div>
-    </div>
 
-    <div class="camera-container">
-      <h3>Camera Feed</h3>
-      <video id="localVideo" autoplay muted></video>
+      <div class="chat-container">
+        <h3>Chat</h3>
+        <div id="chat" class="chat-box"></div>
+        <div class="chat-input">
+          <input type="text" id="chatInput" placeholder="Type message...">
+          <button onclick="sendMessage()">Send</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -184,6 +206,40 @@
       chat.appendChild(div);
       chat.scrollTop = chat.scrollHeight;
     });
+
+    let localStream;
+    const localVideo = document.getElementById('localVideo');
+    const cameraBtn = document.getElementById('cameraBtn');
+
+    async function startCamera() {
+      try {
+        localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        localVideo.srcObject = localStream;
+      } catch (e) {
+        console.error('Camera error:', e);
+      }
+    }
+
+    function stopCamera() {
+      if (localStream) {
+        localStream.getTracks().forEach(track => track.stop());
+        localStream = null;
+        localVideo.srcObject = null;
+      }
+    }
+
+    function toggleCamera() {
+      if (localStream) {
+        stopCamera();
+        cameraBtn.textContent = 'Turn Camera On';
+      } else {
+        startCamera();
+        cameraBtn.textContent = 'Turn Camera Off';
+      }
+    }
+
+    // Start camera on load
+    startCamera();
   </script>
 </body>
 </html>
