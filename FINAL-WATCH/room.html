@@ -35,29 +35,6 @@
       padding: 20px;
       width: 100%;
     }
-    .invite {
-      margin-bottom: 20px;
-      text-align: center;
-    }
-    .invite input {
-      padding: 10px;
-      width: 300px;
-      border-radius: 4px;
-      border: none;
-      font-size: 14px;
-      margin-right: 10px;
-    }
-    .invite button {
-      padding: 10px 16px;
-      background-color: #e50914;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    .invite button:hover {
-      background-color: #f40612;
-    }
     .video-wrapper {
       width: 100%;
       max-width: 100%;
@@ -166,20 +143,19 @@
 <body>
   <header>Watch Together</header>
   <div class="container">
-    <div class="invite">
-      <input id="inviteLink" readonly>
-      <button onclick="copyInvite()">Copy Invite Link</button>
-    </div>
     <div class="controls">
       <input type="text" id="videoLink" placeholder="Paste direct video link (.mp4/.mkv)" />
       <button onclick="setVideoLink()">Set Video</button>
       <button onclick="playVideo()">Play</button>
       <button onclick="pauseVideo()">Pause</button>
     </div>
+
     <div class="video-wrapper">
       <video id="videoPlayer" controls></video>
     </div>
+
     <div class="camera-container" id="cameraGrid"></div>
+
     <div class="chat-container">
       <h3>Chat</h3>
       <div id="chat" class="chat-box"></div>
@@ -198,23 +174,158 @@
     const video = document.getElementById('videoPlayer');
     const cameraGrid = document.getElementById('cameraGrid');
 
-    // Set invite link
-    document.getElementById('inviteLink').value = `${window.location.origin}/room.html?room=${roomId}`;
-
-    function copyInvite() {
-      const linkInput = document.getElementById('inviteLink');
-      linkInput.select();
-      document.execCommand('copy');
-      alert('Invite link copied to clipboard!');
-    }
-
     if (roomId) {
       socket.emit('join', roomId);
     } else {
       alert('Room ID missing. Please return to the home page.');
     }
 
-    // (Video, chat, and camera logic remains unchanged)
+    // Video Sync
+    function setVideoLink() {
+      const link = document.getElementById('videoLink').value;
+      video.src = link;
+      video.currentTime = 0;
+      socket.emit('video-load', { room: roomId, link });
+    }
+
+    socket.on('video-load', data => {
+      video.src = data.link;
+      video.currentTime = 0;
+    });
+
+    function playVideo() {
+      video.play();
+      socket.emit('video-control', { room: roomId, action: 'play', time: video.currentTime });
+    }
+
+    function pauseVideo() {
+      video.pause();
+      socket.emit('video-control', { room: roomId, action: 'pause', time: video.currentTime });
+    }
+
+    video.addEventListener('seeked', () => {
+      socket.emit('video-control', { room: roomId, action: 'seek', time: video.currentTime });
+    });
+
+    socket.on('video-control', data => {
+      if (Math.abs(video.currentTime - data.time) > 0.5) {
+        video.currentTime = data.time;
+      }
+      if (data.action === 'play') video.play();
+      if (data.action === 'pause') video.pause();
+    });
+
+    // Chat
+    function sendMessage() {
+      const msg = document.getElementById('chatInput').value;
+      if (msg.trim() !== '') {
+        socket.emit('chat', { room: roomId, msg });
+        displayMessage(msg, true);
+        document.getElementById('chatInput').value = '';
+      }
+    }
+
+    function displayMessage(msg, self = false) {
+      const chat = document.getElementById('chat');
+      const div = document.createElement('div');
+      div.className = 'chat-msg' + (self ? ' self' : '');
+      div.textContent = msg;
+      chat.appendChild(div);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    socket.on('chat', msg => displayMessage(msg));
+
+    // Multi-user camera feeds using signaling
+    let localStream;
+    const peers = {};
+
+    async function startCamera() {
+      try {
+        localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        addCameraFeed(socket.id, localStream, true);
+        socket.emit('ready-for-call', roomId);
+      } catch (err) {
+        console.error('Error accessing camera:', err);
+      }
+    }
+
+    function addCameraFeed(id, stream, isLocal = false) {
+      if (document.getElementById(`vid-${id}`)) return;
+      const container = document.createElement('div');
+      container.className = 'camera-box';
+      const video = document.createElement('video');
+      video.id = `vid-${id}`;
+      video.srcObject = stream;
+      video.autoplay = true;
+      video.playsInline = true;
+      if (isLocal) video.muted = true;
+      container.appendChild(video);
+      cameraGrid.appendChild(container);
+    }
+
+    socket.on('user-connected', ({ id }) => {
+      const peer = new RTCPeerConnection();
+      localStream.getTracks().forEach(track => peer.addTrack(track, localStream));
+
+      peer.ontrack = e => {
+        addCameraFeed(id, e.streams[0]);
+      };
+
+      peer.onicecandidate = e => {
+        if (e.candidate) {
+          socket.emit('candidate', { to: id, candidate: e.candidate });
+        }
+      };
+
+      peers[id] = peer;
+
+      peer.createOffer().then(offer => {
+        peer.setLocalDescription(offer);
+        socket.emit('offer', { to: id, offer });
+      });
+    });
+
+    socket.on('offer', ({ from, offer }) => {
+      const peer = new RTCPeerConnection();
+      localStream.getTracks().forEach(track => peer.addTrack(track, localStream));
+
+      peer.ontrack = e => {
+        addCameraFeed(from, e.streams[0]);
+      };
+
+      peer.onicecandidate = e => {
+        if (e.candidate) {
+          socket.emit('candidate', { to: from, candidate: e.candidate });
+        }
+      };
+
+      peers[from] = peer;
+
+      peer.setRemoteDescription(offer).then(() => {
+        return peer.createAnswer();
+      }).then(answer => {
+        peer.setLocalDescription(answer);
+        socket.emit('answer', { to: from, answer });
+      });
+    });
+
+    socket.on('answer', ({ from, answer }) => {
+      peers[from]?.setRemoteDescription(answer);
+    });
+
+    socket.on('candidate', ({ from, candidate }) => {
+      peers[from]?.addIceCandidate(new RTCIceCandidate(candidate));
+    });
+
+    socket.on('user-disconnected', id => {
+      const vid = document.getElementById(`vid-${id}`);
+      if (vid) vid.parentElement.remove();
+      peers[id]?.close();
+      delete peers[id];
+    });
+
+    startCamera();
   </script>
 </body>
 </html>
