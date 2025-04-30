@@ -15,6 +15,9 @@
       font-family: 'Roboto', sans-serif;
       background-color: #141414;
       color: #fff;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
     }
     header {
       background-color: #000;
@@ -25,30 +28,32 @@
       color: #e50914;
     }
     .container {
+      flex: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
       padding: 20px;
+      width: 100%;
     }
     .video-wrapper {
       width: 100%;
-      max-width: 960px;
+      max-width: 100%;
       background-color: #000;
       border-radius: 8px;
       overflow: hidden;
       margin-bottom: 20px;
     }
-    video {
+    video#videoPlayer {
       width: 100%;
       height: auto;
       background: black;
     }
     .controls {
       display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
       flex-wrap: wrap;
+      gap: 10px;
       justify-content: center;
+      margin-bottom: 20px;
     }
     input[type="text"] {
       padding: 10px;
@@ -67,30 +72,28 @@
     button:hover {
       background-color: #f40612;
     }
-    .camera-chat-wrapper {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      width: 100%;
-      max-width: 960px;
-      margin-top: 20px;
-    }
     .camera-container {
       display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      width: 100%;
+      margin-top: 20px;
+    }
+    .camera-box {
+      display: flex;
       flex-direction: column;
       align-items: center;
     }
-    .camera-controls {
-      margin-top: 10px;
-    }
-    video#localVideo {
-      width: 320px;
-      height: 240px;
+    .camera-box video {
+      width: 200px;
+      height: 150px;
+      background: black;
       border-radius: 8px;
-      background: #000;
     }
     .chat-container {
       width: 100%;
+      max-width: 960px;
       margin-top: 20px;
     }
     .chat-box {
@@ -108,6 +111,12 @@
     .chat-input input {
       flex: 1;
     }
+    @media (max-width: 768px) {
+      .camera-box video {
+        width: 140px;
+        height: 100px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -124,22 +133,14 @@
       <video id="videoPlayer" controls></video>
     </div>
 
-    <div class="camera-chat-wrapper">
-      <div class="camera-container">
-        <h3>Camera Feed</h3>
-        <video id="localVideo" autoplay muted playsinline></video>
-        <div class="camera-controls">
-          <button onclick="toggleCamera()" id="cameraBtn">Turn Camera Off</button>
-        </div>
-      </div>
+    <div class="camera-container" id="cameraGrid"></div>
 
-      <div class="chat-container">
-        <h3>Chat</h3>
-        <div id="chat" class="chat-box"></div>
-        <div class="chat-input">
-          <input type="text" id="chatInput" placeholder="Type message...">
-          <button onclick="sendMessage()">Send</button>
-        </div>
+    <div class="chat-container">
+      <h3>Chat</h3>
+      <div id="chat" class="chat-box"></div>
+      <div class="chat-input">
+        <input type="text" id="chatInput" placeholder="Type message...">
+        <button onclick="sendMessage()">Send</button>
       </div>
     </div>
   </div>
@@ -152,8 +153,16 @@
     const presetVideo = urlParams.get('video');
     const video = document.getElementById('videoPlayer');
     const socket = io();
-    socket.emit('join', roomId);
+    const cameraGrid = document.getElementById('cameraGrid');
 
+    // Join room
+    if (roomId) {
+      socket.emit('join', roomId);
+    } else {
+      alert('Room ID missing. Please return to the home page.');
+    }
+
+    // Video sync logic
     function setVideoLink() {
       const link = document.getElementById('videoLink').value;
       video.src = link;
@@ -193,6 +202,7 @@
       if (data.action === 'pause') video.pause();
     });
 
+    // Chat logic
     function sendMessage() {
       const msg = document.getElementById('chatInput').value;
       socket.emit('chat', { room: roomId, msg });
@@ -207,38 +217,35 @@
       chat.scrollTop = chat.scrollHeight;
     });
 
+    // Camera feed logic
     let localStream;
-    const localVideo = document.getElementById('localVideo');
-    const cameraBtn = document.getElementById('cameraBtn');
+    const localVideoId = socket.id;
 
     async function startCamera() {
       try {
         localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-        localVideo.srcObject = localStream;
+        addCameraFeed(localVideoId, localStream);
       } catch (e) {
         console.error('Camera error:', e);
       }
     }
 
-    function stopCamera() {
-      if (localStream) {
-        localStream.getTracks().forEach(track => track.stop());
-        localStream = null;
-        localVideo.srcObject = null;
+    function addCameraFeed(id, stream) {
+      let existing = document.getElementById(`vid-${id}`);
+      if (!existing) {
+        const container = document.createElement('div');
+        container.className = 'camera-box';
+        const videoEl = document.createElement('video');
+        videoEl.id = `vid-${id}`;
+        videoEl.autoplay = true;
+        videoEl.muted = (id === socket.id);
+        videoEl.playsInline = true;
+        videoEl.srcObject = stream;
+        container.appendChild(videoEl);
+        cameraGrid.appendChild(container);
       }
     }
 
-    function toggleCamera() {
-      if (localStream) {
-        stopCamera();
-        cameraBtn.textContent = 'Turn Camera On';
-      } else {
-        startCamera();
-        cameraBtn.textContent = 'Turn Camera Off';
-      }
-    }
-
-    // Start camera on load
     startCamera();
   </script>
 </body>
