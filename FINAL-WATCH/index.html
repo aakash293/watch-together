@@ -23,7 +23,7 @@
       text-align: center;
     }
     h1 {
-      font-size: 2.5rem;
+      font-size: 3 rem;
       color: #e50914;
       margin-bottom: 40px;
     }
@@ -70,7 +70,7 @@
 
   <script>
     function createRoom() {
-      const roomId = Math.random().toString(36).substring(2, 8);
+      const roomId = document.getElementById('roomInput').value.trim();
       const url = `/room.html?room=${roomId}&host=1`;
       window.location.href = url;
     }
