@@ -123,7 +123,9 @@
     <div class="video-wrapper">
       <video id="videoPlayer" controls></video>
     </div>
-
+    <h3>Remote Cameras</h3>
+    <div id="remoteVideos" style="display: flex; gap: 10px; flex-wrap: wrap;"></div>
+    
     <div class="camera-chat-wrapper">
       <div class="camera-container">
         <h3>Camera Feed</h3>
@@ -134,6 +136,10 @@
       </div>
 
       <div class="chat-container">
+        <div class="user-list">
+        <h3>Users in Room</h3>
+        <ul id="userList"></ul>
+        </div>
         <h3>Chat</h3>
         <div id="chat" class="chat-box"></div>
         <div class="chat-input">
@@ -143,103 +149,95 @@
       </div>
     </div>
   </div>
-
-  <script src="/socket.io/socket.io.js"></script>
-  <script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const roomId = urlParams.get('room');
-    const isHost = urlParams.get('host') === '1';
-    const presetVideo = urlParams.get('video');
-    const video = document.getElementById('videoPlayer');
-    const socket = io();
-    socket.emit('join', roomId);
-
-    function setVideoLink() {
-      const link = document.getElementById('videoLink').value;
-      video.src = link;
-      video.currentTime = 0;
-      socket.emit('video-load', { room: roomId, link });
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  const urlParams = new URLSearchParams(window.location.search);
+  const roomId = urlParams.get('room');
+  const isHost = urlParams.get('host') === '1';
+  const nickname = urlParams.get('name') || 'Anonymous';
+  
+  const socket = io();
+  socket.emit('join', { room: roomId, name: nickname });
+  
+  const peers = {};
+  const remoteVideos = document.getElementById('remoteVideos');
+  let localStream;
+  
+  async function startCamera() {
+    try {
+      localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      document.getElementById('localVideo').srcObject = localStream;
+      socket.emit('ready', roomId);
+    } catch (e) {
+      console.error('Camera error:', e);
     }
-
-    if (presetVideo) {
-      document.getElementById('videoLink').value = presetVideo;
-      video.src = presetVideo;
-    }
-
-    socket.on('video-load', data => {
-      video.src = data.link;
-      video.currentTime = 0;
-    });
-
-    function playVideo() {
-      video.play();
-      socket.emit('video-control', { room: roomId, action: 'play', time: video.currentTime });
-    }
-
-    function pauseVideo() {
-      video.pause();
-      socket.emit('video-control', { room: roomId, action: 'pause', time: video.currentTime });
-    }
-
-    video.addEventListener('seeked', () => {
-      socket.emit('video-control', { room: roomId, action: 'seek', time: video.currentTime });
-    });
-
-    socket.on('video-control', data => {
-      if (Math.abs(video.currentTime - data.time) > 0.5) {
-        video.currentTime = data.time;
+  }
+  
+  function createPeer(id) {
+    const peer = new RTCPeerConnection();
+    localStream.getTracks().forEach(track => peer.addTrack(track, localStream));
+  
+    peer.onicecandidate = e => {
+      if (e.candidate) {
+        socket.emit('ice-candidate', { target: id, candidate: e.candidate });
       }
-      if (data.action === 'play') video.play();
-      if (data.action === 'pause') video.pause();
+    };
+  
+    peer.ontrack = e => {
+      let video = document.getElementById(remote-${id});
+      if (!video) {
+        video = document.createElement('video');
+        video.id = remote-${id};
+        video.autoplay = true;
+        video.playsInline = true;
+        video.style.width = '200px';
+        remoteVideos.appendChild(video);
+      }
+      video.srcObject = e.streams[0];
+    };
+  
+    return peer;
+  }
+  
+  socket.on('user-list', users => {
+    const ul = document.getElementById('userList');
+    ul.innerHTML = '';
+    users.forEach(name => {
+      const li = document.createElement('li');
+      li.textContent = name;
+      ul.appendChild(li);
     });
-
-    function sendMessage() {
-      const msg = document.getElementById('chatInput').value;
-      socket.emit('chat', { room: roomId, msg });
-      document.getElementById('chatInput').value = '';
+  });
+  
+  socket.on('offer', async ({ from, offer }) => {
+    const peer = createPeer(from);
+    peers[from] = peer;
+    await peer.setRemoteDescription(new RTCSessionDescription(offer));
+    const answer = await peer.createAnswer();
+    await peer.setLocalDescription(answer);
+    socket.emit('answer', { target: from, answer });
+  });
+  
+  socket.on('answer', async ({ from, answer }) => {
+    await peers[from].setRemoteDescription(new RTCSessionDescription(answer));
+  });
+  
+  socket.on('ice-candidate', ({ from, candidate }) => {
+    peers[from].addIceCandidate(new RTCIceCandidate(candidate));
+  });
+  
+  socket.on('ready', async id => {
+    if (!peers[id]) {
+      const peer = createPeer(id);
+      peers[id] = peer;
+      const offer = await peer.createOffer();
+      await peer.setLocalDescription(offer);
+      socket.emit('offer', { target: id, offer });
     }
-
-    socket.on('chat', msg => {
-      const chat = document.getElementById('chat');
-      const div = document.createElement('div');
-      div.textContent = msg;
-      chat.appendChild(div);
-      chat.scrollTop = chat.scrollHeight;
-    });
-
-    let localStream;
-    const localVideo = document.getElementById('localVideo');
-    const cameraBtn = document.getElementById('cameraBtn');
-
-    async function startCamera() {
-      try {
-        localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-        localVideo.srcObject = localStream;
-      } catch (e) {
-        console.error('Camera error:', e);
-      }
-    }
-
-    function stopCamera() {
-      if (localStream) {
-        localStream.getTracks().forEach(track => track.stop());
-        localStream = null;
-        localVideo.srcObject = null;
-      }
-    }
-
-    function toggleCamera() {
-      if (localStream) {
-        stopCamera();
-        cameraBtn.textContent = 'Turn Camera On';
-      } else {
-        startCamera();
-        cameraBtn.textContent = 'Turn Camera Off';
-      }
-    }
-
-    // Start camera on load
-    startCamera();
-  </script>
+  });
+  
+  // Start camera
+  startCamera();
+</script>
 </body>
 </html>
