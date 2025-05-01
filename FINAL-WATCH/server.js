@@ -58,6 +58,10 @@ io.on('connection', (socket) => {
     socket.to(room).emit('set-video', { link });
   });
 
+  socket.on('video-action', ({ room, action, time }) => { 
+    socket.to(room).emit('video-action', { action, time }); 
+  });
+  
   socket.on('disconnect', () => {
     const room = socket.room;
     if (room && roomUsers[room]) {
