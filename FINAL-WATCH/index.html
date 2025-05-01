@@ -62,6 +62,12 @@
 </head>
 <body>
   <h1>Watch Together</h1>
+  <div class="input-group">
+    <input type="text" id="nicknameInput" placeholder="Your Nickname" required />
+    <input type="text" id="roomInput" placeholder="Room ID" required />
+    <button onclick="createRoom()">Create Room</button>
+    <button onclick="joinRoom()">Join Room</button>
+  </div>
   <script>
     function createRoom() {
       const roomId = document.getElementById('roomInput').value.trim();
