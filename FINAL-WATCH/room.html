@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,11 +12,13 @@
       padding: 0;
       box-sizing: border-box;
     }
+
     body {
       font-family: 'Roboto', sans-serif;
       background-color: #141414;
       color: #fff;
     }
+
     header {
       background-color: #000;
       padding: 20px;
@@ -24,12 +27,14 @@
       font-weight: bold;
       color: #e50914;
     }
+
     .container {
       display: flex;
       flex-direction: column;
       align-items: center;
       padding: 20px;
     }
+
     .video-wrapper {
       width: 100%;
       max-width: 960px;
@@ -38,11 +43,13 @@
       overflow: hidden;
       margin-bottom: 20px;
     }
+
     video {
       width: 100%;
       height: 320;
       background: black;
     }
+
     .controls {
       display: flex;
       gap: 10px;
@@ -50,12 +57,14 @@
       flex-wrap: wrap;
       justify-content: center;
     }
+
     input[type="text"] {
       padding: 10px;
       width: 300px;
       border: none;
       border-radius: 4px;
     }
+
     button {
       padding: 10px 20px;
       background-color: #e50914;
@@ -64,9 +73,11 @@
       border-radius: 4px;
       cursor: pointer;
     }
+
     button:hover {
       background-color: #f40612;
     }
+
     .camera-chat-wrapper {
       display: flex;
       flex-direction: column;
@@ -75,24 +86,29 @@
       max-width: 960px;
       margin-top: 20px;
     }
+
     .camera-container {
       display: flex;
       flex-direction: column;
       align-items: center;
     }
+
     .camera-controls {
       margin-top: 10px;
     }
+
     video#localVideo {
       width: 100%;
       height: 320px;
       border-radius: 8px;
       background: #000;
     }
+
     .chat-container {
       width: 100%;
       margin-top: 20px;
     }
+
     .chat-box {
       background-color: #222;
       height: 200px;
@@ -100,16 +116,19 @@
       padding: 10px;
       border-radius: 4px;
     }
+
     .chat-input {
       display: flex;
       gap: 10px;
       margin-top: 10px;
     }
+
     .chat-input input {
       flex: 1;
     }
   </style>
 </head>
+
 <body>
   <header>Watch Together</header>
   <div class="container">
@@ -125,7 +144,7 @@
     </div>
     <h3>Remote Cameras</h3>
     <div id="remoteVideos" style="display: flex; gap: 10px; flex-wrap: wrap;"></div>
-    
+
     <div class="camera-chat-wrapper">
       <div class="camera-container">
         <h3>Camera Feed</h3>
@@ -137,8 +156,8 @@
 
       <div class="chat-container">
         <div class="user-list">
-        <h3>Users in Room</h3>
-        <ul id="userList"></ul>
+          <h3>Users in Room</h3>
+          <ul id="userList"></ul>
         </div>
         <h3>Chat</h3>
         <div id="chat" class="chat-box"></div>
@@ -149,95 +168,95 @@
       </div>
     </div>
   </div>
-<script src="/socket.io/socket.io.js"></script>
-<script>
-  const urlParams = new URLSearchParams(window.location.search);
-  const roomId = urlParams.get('room');
-  const isHost = urlParams.get('host') === '1';
-  const nickname = urlParams.get('name') || 'Anonymous';
-  
-  const socket = io();
-  socket.emit('join', { room: roomId, name: nickname });
-  
-  const peers = {};
-  const remoteVideos = document.getElementById('remoteVideos');
-  let localStream;
-  
-  async function startCamera() {
-    try {
-      localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-      document.getElementById('localVideo').srcObject = localStream;
-      socket.emit('ready', roomId);
-    } catch (e) {
-      console.error('Camera error:', e);
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const roomId = urlParams.get('room');
+    const isHost = urlParams.get('host') === '1';
+    const nickname = urlParams.get('name') || 'Anonymous';
+
+    const socket = io();
+    socket.emit('join', { room: roomId, name: nickname });
+
+    const peers = {};
+    const remoteVideos = document.getElementById('remoteVideos');
+    let localStream;
+
+    async function startCamera() {
+      try {
+        localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        document.getElementById('localVideo').srcObject = localStream;
+        socket.emit('ready', roomId);
+      } catch (e) {
+        console.error('Camera error:', e);
+      }
     }
-  }
-  
-  function createPeer(id) {
-    const peer = new RTCPeerConnection();
-    localStream.getTracks().forEach(track => peer.addTrack(track, localStream));
-  
-    peer.onicecandidate = e => {
-      if (e.candidate) {
-        socket.emit('ice-candidate', { target: id, candidate: e.candidate });
-      }
-    };
-  
-    peer.ontrack = e => {
-      let video = document.getElementById('remote-${id}');
-      if (!video) {
-        video = document.createElement('video');
-        video.id = 'remote-${id}';
-        video.autoplay = true;
-        video.playsInline = true;
-        video.style.width = '200px';
-        remoteVideos.appendChild(video);
-      }
-      video.srcObject = e.streams[0];
-    };
-  
-    return peer;
-  }
-  
-  socket.on('user-list', users => {
-    const ul = document.getElementById('userList');
-    ul.innerHTML = '';
-    users.forEach(name => {
-      const li = document.createElement('li');
-      li.textContent = name;
-      ul.appendChild(li);
+
+    function createPeer(id) {
+      const peer = new RTCPeerConnection();
+      localStream.getTracks().forEach(track => peer.addTrack(track, localStream));
+
+      peer.onicecandidate = e => {
+        if (e.candidate) {
+          socket.emit('ice-candidate', { target: id, candidate: e.candidate });
+        }
+      };
+
+      peer.ontrack = e => {
+        let video = document.getElementById('remote-${id}');
+        if (!video) {
+          video = document.createElement('video');
+          video.id = 'remote-${id}';
+          video.autoplay = true;
+          video.playsInline = true;
+          video.style.width = '200px';
+          remoteVideos.appendChild(video);
+        }
+        video.srcObject = e.streams[0];
+      };
+
+      return peer;
+    }
+
+    socket.on('user-list', users => {
+      const ul = document.getElementById('userList');
+      ul.innerHTML = '';
+      users.forEach(name => {
+        const li = document.createElement('li');
+        li.textContent = name;
+        ul.appendChild(li);
+      });
     });
-  });
-  
-  socket.on('offer', async ({ from, offer }) => {
-    const peer = createPeer(from);
-    peers[from] = peer;
-    await peer.setRemoteDescription(new RTCSessionDescription(offer));
-    const answer = await peer.createAnswer();
-    await peer.setLocalDescription(answer);
-    socket.emit('answer', { target: from, answer });
-  });
-  
-  socket.on('answer', async ({ from, answer }) => {
-    await peers[from].setRemoteDescription(new RTCSessionDescription(answer));
-  });
-  
-  socket.on('ice-candidate', ({ from, candidate }) => {
-    peers[from].addIceCandidate(new RTCIceCandidate(candidate));
-  });
-  
-  socket.on('ready', async id => {
-    if (!peers[id]) {
-      const peer = createPeer(id);
-      peers[id] = peer;
-      const offer = await peer.createOffer();
-      await peer.setLocalDescription(offer);
-      socket.emit('offer', { target: id, offer });
-    }
-  });
-  
-  // Start camera
-  startCamera();
-</script>
+
+    socket.on('offer', async ({ from, offer }) => {
+      const peer = createPeer(from);
+      peers[from] = peer;
+      await peer.setRemoteDescription(new RTCSessionDescription(offer));
+      const answer = await peer.createAnswer();
+      await peer.setLocalDescription(answer);
+      socket.emit('answer', { target: from, answer });
+    });
+
+    socket.on('answer', async ({ from, answer }) => {
+      await peers[from].setRemoteDescription(new RTCSessionDescription(answer));
+    });
+
+    socket.on('ice-candidate', ({ from, candidate }) => {
+      peers[from].addIceCandidate(new RTCIceCandidate(candidate));
+    });
+
+    socket.on('ready', async id => {
+      if (!peers[id]) {
+        const peer = createPeer(id);
+        peers[id] = peer;
+        const offer = await peer.createOffer();
+        await peer.setLocalDescription(offer);
+        socket.emit('offer', { target: id, offer });
+      }
+    });
+
+    // Start camera
+    startCamera();
+  </script>
 </body>
 </html>
