@@ -62,23 +62,19 @@
 </head>
 <body>
   <h1>Watch Together</h1>
-  <div class="input-group">
-    <input type="text" id="roomInput" placeholder="Enter Room ID" />
-    <button onclick="createRoom()">Create Room</button>
-    <button onclick="joinRoom()">Join Room</button>
-  </div>
-
   <script>
     function createRoom() {
       const roomId = document.getElementById('roomInput').value.trim();
-      const url = `/room.html?room=${roomId}&host=1`;
+      const nickname = document.getElementById('nicknameInput').value.trim();
+      const url = /room.html?room=${roomId}&host=1&name=${encodeURIComponent(nickname)};
       window.location.href = url;
     }
-
+  
     function joinRoom() {
       const roomId = document.getElementById('roomInput').value.trim();
-      if (roomId) {
-        const url = `/room.html?room=${roomId}`;
+      const nickname = document.getElementById('nicknameInput').value.trim();
+      if (roomId && nickname) {
+        const url = /room.html?room=${roomId}&name=${encodeURIComponent(nickname)};
         window.location.href = url;
       }
     }
