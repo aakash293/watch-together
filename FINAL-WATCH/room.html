@@ -143,19 +143,19 @@
     </div>
 
     <div class="camera-container">
-      <h3>Remote Cameras</h3>
       <div id="remoteVideos" style="display: flex; flex-wrap: wrap; gap: 10px;"></div>
-
-      <h3>Your Camera</h3>
       <video id="localVideo" autoplay muted playsinline></video>
       <div>
         <button onclick="toggleCamera()" id="cameraBtn">Turn Camera Off</button>
       </div>
     </div>
 
-    <div class="chat-container">
-      <h3>Users in Room</h3>
-      <ul id="userList"></ul>
+    <div class="chat-container" >
+      <div style="display: flex; flex-wrap: wrap;gap:10px;">
+        <h3>Users in Room</h3>
+          <ul id="userList"></ul>
+      </div>
+      <br>
       <h3>Chat</h3>
       <div id="chat" class="chat-box"></div>
       <div class="chat-input">
