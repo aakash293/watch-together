@@ -168,7 +168,9 @@
     }
 
     function createPeer(id) {
-      const peer = new RTCPeerConnection();
+      const peer = new RTCPeerConnection({
+        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+      });
       localStream.getTracks().forEach(track => peer.addTrack(track, localStream));
 
       peer.onicecandidate = e => {
@@ -177,7 +179,9 @@
         }
       };
 
+      let remoteStream = new MediaStream();
       peer.ontrack = e => {
+        e.streams[0].getTracks().forEach(track => remoteStream.addTrack(track));
         let video = document.getElementById(`remote-${id}`);
         if (!video) {
           video = document.createElement('video');
@@ -186,7 +190,7 @@
           video.playsInline = true;
           remoteVideos.appendChild(video);
         }
-        video.srcObject = e.streams[0];
+        video.srcObject = remoteStream;
       };
 
       return peer;
@@ -239,11 +243,11 @@
     }
 
     socket.on('chat', (msg) => {
-      const chat = document.getElementById('chat');
+      const chatBox = document.getElementById('chat');
       const p = document.createElement('p');
       p.textContent = msg;
-      chat.appendChild(p);
-      chat.scrollTop = chat.scrollHeight;
+      chatBox.appendChild(p);
+      chatBox.scrollTop = chatBox.scrollHeight;
     });
 
     function setVideoLink() {
