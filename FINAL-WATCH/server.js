@@ -70,6 +70,9 @@ io.on('connection', (socket) => {
     socket.to(room).emit('pause-video');
   });
 
+  socket.on('sync-video', ({ room, action, time }) => {
+    socket.to(room).emit('sync-video', { action, time });
+  });
   
 
   socket.on('disconnect', () => {
