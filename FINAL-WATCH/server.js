@@ -7,6 +7,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
+// Serve static files like index.html, room.html, client.js
 app.use(express.static(path.join(__dirname)));
 
 const roomUsers = {};
@@ -15,8 +16,12 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
+app.get('/room.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'room.html'));
+});
+
 io.on('connection', (socket) => {
-  console.log('User connected');
+  console.log('A user connected');
 
   socket.on('join', ({ room, name }) => {
     socket.join(room);
@@ -27,6 +32,10 @@ io.on('connection', (socket) => {
     roomUsers[room][socket.id] = name;
 
     io.to(room).emit('user-list', Object.values(roomUsers[room]));
+  });
+
+  socket.on('chat', ({ room, msg }) => {
+    io.to(room).emit('chat', msg);
   });
 
   socket.on('ready', (room) => {
@@ -51,6 +60,7 @@ io.on('connection', (socket) => {
       delete roomUsers[room][socket.id];
       io.to(room).emit('user-list', Object.values(roomUsers[room]));
     }
+    console.log('A user disconnected');
   });
 });
 
