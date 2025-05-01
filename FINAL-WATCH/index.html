@@ -53,22 +53,32 @@
     button:hover {
       background-color: #f40612;
     }
+    footer {
+        text-align: center;
+        padding: 3px;
+        background-color: #141414;
+        color: #808080;
+     }
     @media (max-width: 600px) {
       h1 {
         font-size: 2rem;
       }
     }
+    
   </style>
 </head>
 <body>
-  <h1>Watch Together</h1>
+  <h1 style="font-size:300%" > 3-1-0-7 </h1>
+  
   <div class="input-group">
     <input type="text" id="nicknameInput" placeholder="Your Nickname" required />
     <input type="text" id="roomInput" placeholder="Room ID" required />
     <button onclick="createRoom()">Create Room</button>
     <button onclick="joinRoom()">Join Room</button>
   </div>
-  
+  <footer>
+    <p>copyright owned by DRISH</p>
+  </footer>
   <script>
     function createRoom() {
       const roomId = document.getElementById('roomInput').value.trim();
