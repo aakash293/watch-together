@@ -184,10 +184,10 @@
     };
   
     peer.ontrack = e => {
-      let video = document.getElementById(remote-${id});
+      let video = document.getElementById('remote-${id}');
       if (!video) {
         video = document.createElement('video');
-        video.id = remote-${id};
+        video.id = 'remote-${id}';
         video.autoplay = true;
         video.playsInline = true;
         video.style.width = '200px';
