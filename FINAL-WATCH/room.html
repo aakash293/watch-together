@@ -298,11 +298,23 @@
 
     function playVideo() {
       document.getElementById('videoPlayer').play();
+      socket.emit('play-video', { room: roomId });
     }
 
-    function pauseVideo() {
+     function pauseVideo() {
       document.getElementById('videoPlayer').pause();
-    }
+      socket.emit('pause-video', { room: roomId });
+     }
+
+    socket.on('play-video', () => {
+      const video = document.getElementById('videoPlayer');
+       video.play();
+    });
+
+    socket.on('pause-video', () => {
+        const video = document.getElementById('videoPlayer');
+        video.pause();
+    });
 
     function toggleCamera() {
       const video = document.getElementById('localVideo');
