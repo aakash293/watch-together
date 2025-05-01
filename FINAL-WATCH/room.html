@@ -301,34 +301,31 @@
       const video = document.getElementById('videoPlayer');
       video.src = link;
     });
-
     function playVideo() {
       const video = document.getElementById('videoPlayer');
-      socket.emit('play-video', { room: roomId, time: video.currentTime });
-      video.play();
+      const currentTime = video.currentTime;
+      socket.emit('sync-video', { room: roomId, action: 'play', time: currentTime });
     }
-
+    
     function pauseVideo() {
       const video = document.getElementById('videoPlayer');
-      socket.emit('pause-video', { room: roomId, time: video.currentTime });
-      video.pause();
+      const currentTime = video.currentTime;
+      socket.emit('sync-video', { room: roomId, action: 'pause', time: currentTime });
     }
 
-    socket.on('play-video', ({ time }) => {
+
+    socket.on('sync-video', ({ action, time }) => {
       const video = document.getElementById('videoPlayer');
       if (Math.abs(video.currentTime - time) > 0.5) {
         video.currentTime = time;
       }
-      video.play();
+      if (action === 'play') {
+        video.play();
+      } else if (action === 'pause') {
+        video.pause();
+      }
     });
 
-    socket.on('pause-video', ({ time }) => {
-      const video = document.getElementById('videoPlayer');
-      if (Math.abs(video.currentTime - time) > 0.5) {
-        video.currentTime = time;
-      }
-      video.pause();
-    });
 
     function toggleCamera() {
       const video = document.getElementById('localVideo');
