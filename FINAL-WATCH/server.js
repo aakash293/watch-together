@@ -53,6 +53,10 @@ io.on('connection', (socket) => {
   socket.on('ice-candidate', ({ target, candidate }) => {
     io.to(target).emit('ice-candidate', { from: socket.id, candidate });
   });
+  
+  socket.on('set-video', ({ room, link }) => {
+    socket.to(room).emit('set-video', { link });
+  });
 
   socket.on('disconnect', () => {
     const room = socket.room;
