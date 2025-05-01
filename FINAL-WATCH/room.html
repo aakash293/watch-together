@@ -80,17 +80,19 @@
 
     .camera-chat-wrapper {
       display: flex;
-      flex-direction: column;
-      align-items: center;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: flex-start;
       width: 100%;
       max-width: 960px;
-      margin-top: 20px;
+      gap: 20px;
     }
 
     .camera-container {
       display: flex;
       flex-direction: column;
       align-items: center;
+      flex: 1;
     }
 
     .camera-controls {
@@ -107,6 +109,7 @@
     .chat-container {
       width: 100%;
       margin-top: 20px;
+      flex: 1;
     }
 
     .chat-box {
@@ -203,10 +206,10 @@
       };
 
       peer.ontrack = e => {
-        let video = document.getElementById('remote-${id}');
+        let video = document.getElementById(`remote-${id}`);
         if (!video) {
           video = document.createElement('video');
-          video.id = 'remote-${id}';
+          video.id = `remote-${id}`;
           video.autoplay = true;
           video.playsInline = true;
           video.style.width = '200px';
