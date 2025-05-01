@@ -68,11 +68,12 @@
     <button onclick="createRoom()">Create Room</button>
     <button onclick="joinRoom()">Join Room</button>
   </div>
+  
   <script>
     function createRoom() {
       const roomId = document.getElementById('roomInput').value.trim();
       const nickname = document.getElementById('nicknameInput').value.trim();
-      const url = '/room.html?room=${roomId}&host=1&name=${encodeURIComponent(nickname)}';
+      const url = `/room.html?room=${roomId}&host=1&name=${encodeURIComponent(nickname)}`;
       window.location.href = url;
     }
 
@@ -80,7 +81,7 @@
       const roomId = document.getElementById('roomInput').value.trim();
       const nickname = document.getElementById('nicknameInput').value.trim();
       if (roomId && nickname) {
-        const url = '/room.html?room=${roomId}&name=${encodeURIComponent(nickname)}';
+        const url = `/room.html?room=${roomId}&name=${encodeURIComponent(nickname)}`;
         window.location.href = url;
       }
     }
