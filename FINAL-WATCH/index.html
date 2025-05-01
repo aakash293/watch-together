@@ -62,23 +62,22 @@
 </head>
 <body>
   <h1>Watch Together</h1>
- <script>
-  function createRoom() {
-    const roomId = document.getElementById('roomInput').value.trim();
-    const nickname = document.getElementById('nicknameInput').value.trim();
-    const url = '/room.html?room=${roomId}&host=1&name=${encodeURIComponent(nickname)}';
-    window.location.href = url;
-  }
-
-  function joinRoom() {
-    const roomId = document.getElementById('roomInput').value.trim();
-    const nickname = document.getElementById('nicknameInput').value.trim();
-    if (roomId && nickname) {
-      const url = '/room.html?room=${roomId}&name=${encodeURIComponent(nickname)}';
+  <script>
+    function createRoom() {
+      const roomId = document.getElementById('roomInput').value.trim();
+      const nickname = document.getElementById('nicknameInput').value.trim();
+      const url = '/room.html?room=${roomId}&host=1&name=${encodeURIComponent(nickname)}';
       window.location.href = url;
     }
-  }
-</script>
+
+    function joinRoom() {
+      const roomId = document.getElementById('roomInput').value.trim();
+      const nickname = document.getElementById('nicknameInput').value.trim();
+      if (roomId && nickname) {
+        const url = '/room.html?room=${roomId}&name=${encodeURIComponent(nickname)}';
+        window.location.href = url;
+      }
+    }
+  </script>
 </body>
 </html>
-
