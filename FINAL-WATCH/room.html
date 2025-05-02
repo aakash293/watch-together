@@ -303,15 +303,24 @@
       peers[from].addIceCandidate(new RTCIceCandidate(candidate));
     });
 
-    socket.on('ready', async id => {
-      if (!peers[id]) {
-        const peer = createPeer(id);
-        peers[id] = peer;
-        const offer = await peer.createOffer();
-        await peer.setLocalDescription(offer);
-        socket.emit('offer', { target: id, offer });
-      }
-    });
+   socket.on('ready', async id => {
+  // Remove any old peer and video to avoid frozen duplicates
+  if (peers[id]) {
+    const oldVideo = document.getElementById(`remote-${id}`);
+    const oldPlaceholder = document.getElementById(`placeholder-${id}`);
+    if (oldVideo) oldVideo.remove();
+    if (oldPlaceholder) oldPlaceholder.remove();
+    peers[id].close();
+    delete peers[id];
+  }
+
+  const peer = createPeer(id);
+  peers[id] = peer;
+  const offer = await peer.createOffer();
+  await peer.setLocalDescription(offer);
+  socket.emit('offer', { target: id, offer });
+});
+
 
     function sendMessage() {
       const input = document.getElementById('chatInput');
@@ -414,7 +423,7 @@
           localStream = stream;
           localVideo.srcObject = stream;
           btn.textContent = 'Turn Camera Off';
-          socket.emit('camera-toggle', { room: roomId, on: true });
+          socket.emit('camera-toggle', { room: roomId, on: false });
 
 
     
@@ -434,23 +443,37 @@
         });
       }
     }
-  socket.on('camera-toggle', ({ from, on }) => {
-    const video = document.getElementById(`remote-${from}`);
-    const placeholder = document.getElementById(`placeholder-${from}`);
+ socket.on('camera-toggle', ({ from, on }) => {
+  const video = document.getElementById(`remote-${from}`);
+  const placeholder = document.getElementById(`placeholder-${from}`);
 
-  if (on) {
-    if (placeholder) placeholder.remove();
-  } else {
+  if (!on) {
+    // Remove video if exists and show placeholder
     if (video) video.remove();
-    if (!document.getElementById(`placeholder-${from}`)) {
+    if (!placeholder) {
       const ph = document.createElement('div');
       ph.className = 'placeholder';
       ph.id = `placeholder-${from}`;
       ph.innerText = 'Camera is off';
       remoteVideos.appendChild(ph);
     }
+  } else {
+    // Remove placeholder when camera is turned back on
+    if (placeholder) placeholder.remove();
   }
 });
+socket.on('user-disconnected', (id) => {
+  const video = document.getElementById(`remote-${id}`);
+  const placeholder = document.getElementById(`placeholder-${id}`);
+  if (video) video.remove();
+  if (placeholder) placeholder.remove();
+  if (peers[id]) {
+    peers[id].close();
+    delete peers[id];
+  }
+});
+
+
 
     startCamera();
   </script>
