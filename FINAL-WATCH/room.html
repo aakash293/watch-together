@@ -1,481 +1,509 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Watch Room</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
-  <style>
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
-  body {
-    font-family: 'Roboto', sans-serif;
-    background-color: #141414;
-    color: #fff;
-  }
-  header {
-    background-color: #000;
-    padding: 20px;
-    text-align: center;
-    font-size: 30px;
-    font-weight: bold;
-    color: #e50914;
-  }
-  .container {
-    max-width: 1200px;
-    margin: auto;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
-  .video-wrapper {
-    position: relative;
-    padding-top: 56.25%;
-    background-color: #000;
-    border-radius: 8px;
-    overflow: hidden;
-  }
-  .video-wrapper video {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-  }
-  .controls {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-  input[type="text"] {
-    padding: 10px;
-    width: 300px;
-    border: none;
-    border-radius: 4px;
-  }
-  button {
-    padding: 10px 20px;
-    background-color: #e50914;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  button:hover {
-    background-color: #f40612;
-  }
-  .camera-container {
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 20px;
-  }
-  .camera-container h3 {
-    width: 100%;
-  }
-  #remoteVideos video, .placeholder {
-      width: 48%;
-      height: 150px;
-      border-radius: 8px;
-      transform: scaleX(-1);
-      background: #000;
-    }
-    .placeholder {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      color: #999;
-      font-style: italic;
-    }
-  video#localVideo {
-    width: 48%;
-    height: 150px;
-    border-radius: 8px;
-    transform: scaleX(-1);
-    background: #000;
-  }
-  .chat-container {
-    margin-top: 20px;
-  }
-  .chat-box {
-    background-color: #222;
-    height: 200px;
-    overflow-y: auto;
-    padding: 10px;
-    border-radius: 4px;
-  }
-  .chat-input {
-    display: flex;
-    gap: 10px;
-    margin-top: 10px;
-  }
-  .chat-input input {
-    flex: 1;
-    padding: 10px;
-  }
-  #userList {
-    margin: 5px 10px;
-    display: flex;
-    padding-left: 10px;
-    gap: 30px;
-  }
- 
-  @media (max-width: 768px) {
-    .camera-container {
-      display : flex;
-      flex-wrap: nowrap;
-      justify-content: space-around;
-      align-items: center;
-    }
-    #remoteVideos video {
-      width: 150px;
-      height: 150px;
-      transform: scaleX(-1);
-    }
-    
-    video#localVideo {
-      width: 150px;
-      height: 150px;
-      transform: scaleX(-1);
-    }
-    input[type="text"] {
-      width: 100%;
-    }
-    .controls {
-      flex-direction: column;
-    }
-     #camera-local{
-      display: flex ;
-      flex-wrap: nowrap;
-      justify-content: space-evenly;
-    }
-    div#playpause{
-      display: flex;
-      flex-wrap: nowrap;
-      justify-content:space-evenly;
-    }
-    #playpause button{
-      padding: 10px 60px;
-    }
-  }
-   
-  </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Watch Room</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #141414;
+            color: #fff;
+        }
+
+        header {
+            background-color: #000;
+            padding: 20px;
+            text-align: center;
+            font-size: 30px;
+            font-weight: bold;
+            color: #e50914;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .video-wrapper {
+            position: relative;
+            padding-top: 56.25%;
+            background-color: #000;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .video-wrapper video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            width: 300px;
+            border: none;
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #e50914;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #f40612;
+        }
+
+        .camera-container {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .camera-container h3 {
+            width: 100%;
+        }
+
+        #remoteVideos video,
+        .placeholder {
+            width: 48%;
+            height: 150px;
+            border-radius: 8px;
+            transform: scaleX(-1);
+            background: #000;
+        }
+
+        .placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: #999;
+            font-style: italic;
+        }
+
+        video#localVideo {
+            width: 48%;
+            height: 150px;
+            border-radius: 8px;
+            transform: scaleX(-1);
+            background: #000;
+        }
+
+        .chat-container {
+            margin-top: 20px;
+        }
+
+        .chat-box {
+            background-color: #222;
+            height: 200px;
+            overflow-y: auto;
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        .chat-input {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 10px;
+        }
+
+        #userList {
+            margin: 5px 10px;
+            display: flex;
+            padding-left: 10px;
+            gap: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .camera-container {
+                display: flex;
+                flex-wrap: nowrap;
+                justify-content: space-around;
+                align-items: center;
+            }
+
+            #remoteVideos video {
+                width: 150px;
+                height: 150px;
+                transform: scaleX(-1);
+            }
+
+            video#localVideo {
+                width: 150px;
+                height: 150px;
+                transform: scaleX(-1);
+            }
+
+            input[type="text"] {
+                width: 100%;
+            }
+
+            .controls {
+                flex-direction: column;
+            }
+
+            #camera-local {
+                display: flex;
+                flex-wrap: nowrap;
+                justify-content: space-evenly;
+            }
+
+            div#playpause {
+                display: flex;
+                flex-wrap: nowrap;
+                justify-content: space-evenly;
+            }
+
+            #playpause button {
+                padding: 10px 60px;
+            }
+        }
+    </style>
 </head>
+
 <body>
-  <header>DIRSH v2.0</header>
-  <div class="container">
-    <div class="controls">
-      <input type="text" id="videoLink" placeholder="Paste direct video link (.mp4/.mkv)" />
-      <button onclick="setVideoLink()">Set Video</button>
-     <div id="playpause">
-      <button onclick="playVideo()">Play</button>
-      <button onclick="pauseVideo()">Pause</button>
+    <header>DIRSH</header>
+    <div class="container">
+        <div class="controls">
+            <input type="text" id="videoLink" placeholder="Paste direct video link (.mp4/.mkv)" />
+            <button onclick="setVideoLink()">Set Video</button>
+            <div id="playpause">
+                <button onclick="playVideo()">Play</button>
+                <button onclick="pauseVideo()">Pause</button>
+            </div>
+        </div>
+        <div class="video-wrapper">
+            <video id="videoPlayer" controls></video>
+        </div>
+
+        <div class="camera-container">
+            <div id="remoteVideos">
+            </div>
+            <div>
+                <video id="localVideo" autoplay muted playsinline></video>
+            </div>
+        </div>
+        <div id="camera-local">
+            <button onclick="toggleCamera()" id="cameraBtn">Turn Camera Off</button>
+        </div>
+        <div class="chat-container">
+            <h3>Users in Room</h3>
+            <ul id="userList"></ul>
+            <br>
+            <h3>Chat</h3>
+            <div id="chat" class="chat-box"></div>
+            <div class="chat-input">
+                <input type="text" id="chatInput" placeholder="Type message..." />
+                <button onclick="sendMessage()">Send</button>
+            </div>
+        </div>
     </div>
-    </div>
-    <div class="video-wrapper">
-      <video id="videoPlayer" controls></video>
-    </div>
 
-    <div class="camera-container">
-      <div id="remoteVideos">
-      </div>
-      <div>
-        <video id="localVideo" autoplay muted playsinline></video>
-      </div>
-    </div>
-    <div id="camera-local">
-        <button onclick="toggleCamera()" id="cameraBtn">Turn Camera Off</button>
-    </div>
-    <div class="chat-container" >
-      <h3>Users in Room</h3>
-      <ul id="userList"></ul>
-      <br>
-      <h3>Chat</h3>
-      <div id="chat" class="chat-box"></div>
-      <div class="chat-input">
-        <input type="text" id="chatInput" placeholder="Type message..." />
-        <button onclick="sendMessage()">Send</button>
-      </div>
-    </div>
-  </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const roomId = urlParams.get('room');
+        const nickname = urlParams.get('name') || 'Anonymous';
 
-  <script src="/socket.io/socket.io.js"></script>
-  <script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const roomId = urlParams.get('room');
-    const nickname = urlParams.get('name') || 'Anonymous';
+        const socket = io();
+        socket.emit('join', { room: roomId, name: nickname });
 
-    const socket = io();
-    socket.emit('join', { room: roomId, name: nickname });
+        const peers = {};
+        const remoteVideos = document.getElementById('remoteVideos');
+        let localStream;
+        let suppressEvent = false;
 
-    const peers = {};
-    const remoteVideos = document.getElementById('remoteVideos');
-    let localStream;
-    let suppressEvent = false;
-
-    async function startCamera() {
-      try {
-        localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-        document.getElementById('localVideo').srcObject = localStream;
-        socket.emit('ready', roomId);
-      } catch (e) {
-        console.error('Camera error:', e);
-      }
-    }
-
-    function createPeer(id) {
-      const peer = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
-      if (localStream) {
-        localStream.getTracks().forEach(track => peer.addTrack(track, localStream));
-      }
-      peer.onicecandidate = e => {
-        if (e.candidate) {
-          socket.emit('ice-candidate', { target: id, candidate: e.candidate });
-        }
-      };
-
-      let remoteStream = new MediaStream();
-      peer.ontrack = e => {
-        e.streams[0].getTracks().forEach(track => remoteStream.addTrack(track));
-        let video = document.getElementById(`remote-${id}`);
-        let placeholder = document.getElementById(`placeholder-${id}`);
-
-        if (!video) {
-          video = document.createElement('video');
-          video.id = `remote-${id}`;
-          video.autoplay = true;
-          video.playsInline = true;
-          remoteVideos.appendChild(video);
-        }
-        video.srcObject = remoteStream;
-
-        // Hide placeholder if showing
-        if (placeholder) placeholder.remove();
-      };
-
-      peer.onconnectionstatechange = () => {
-        if (peer.connectionState === 'disconnected' || peer.connectionState === 'failed') {
-          const video = document.getElementById(`remote-${id}`);
-          if (video) video.remove();
-          if (!document.getElementById(`placeholder-${id}`)) {
-            const ph = document.createElement('div');
-            ph.className = 'placeholder';
-            ph.id = `placeholder-${id}`;
-            ph.innerText = 'Camera is off';
-            remoteVideos.appendChild(ph);
-          }
-        }
-      };
-
-      return peer;
-    }
-
-    socket.on('user-list', users => {
-      const ul = document.getElementById('userList');
-      ul.innerHTML = '';
-      users.forEach(name => {
-        const li = document.createElement('li');
-        li.textContent = name;
-        ul.appendChild(li);
-      });
-    });
-
-    socket.on('offer', async ({ from, offer }) => {
-      const peer = createPeer(from);
-      peers[from] = peer;
-      await peer.setRemoteDescription(new RTCSessionDescription(offer));
-      const answer = await peer.createAnswer();
-      await peer.setLocalDescription(answer);
-      socket.emit('answer', { target: from, answer });
-    });
-
-    socket.on('answer', async ({ from, answer }) => {
-      await peers[from].setRemoteDescription(new RTCSessionDescription(answer));
-    });
-
-    socket.on('ice-candidate', ({ from, candidate }) => {
-      peers[from].addIceCandidate(new RTCIceCandidate(candidate));
-    });
-
-   socket.on('ready', async id => {
-  // Remove any old peer and video to avoid frozen duplicates
-  if (peers[id]) {
-    const oldVideo = document.getElementById(`remote-${id}`);
-    const oldPlaceholder = document.getElementById(`placeholder-${id}`);
-    if (oldVideo) oldVideo.remove();
-    if (oldPlaceholder) oldPlaceholder.remove();
-    peers[id].close();
-    delete peers[id];
-  }
-
-  const peer = createPeer(id);
-  peers[id] = peer;
-  const offer = await peer.createOffer();
-  await peer.setLocalDescription(offer);
-  socket.emit('offer', { target: id, offer });
-});
-
-
-    function sendMessage() {
-      const input = document.getElementById('chatInput');
-      const message = input.value.trim();
-      if (message) {
-        socket.emit('chat', { room: roomId, msg: `${nickname}: ${message}` });
-        input.value = '';
-      }
-    }
-
-    socket.on('chat', (msg) => {
-      const chatBox = document.getElementById('chat');
-      const p = document.createElement('p');
-      p.textContent = typeof msg === 'string' ? msg : msg.msg;
-      chatBox.appendChild(p);
-      chatBox.scrollTop = chatBox.scrollHeight;
-    });
-
-    function setVideoLink() {
-      const link = document.getElementById('videoLink').value;
-      const video = document.getElementById('videoPlayer');
-      video.src = link;
-      socket.emit('set-video', { room: roomId, link });
-    }
-
-    socket.on('set-video', ({ link }) => {
-      const video = document.getElementById('videoPlayer');
-      video.src = link;
-    });
-
-    const video = document.getElementById('videoPlayer');
-
-    video.addEventListener('play', () => {
-      if (!suppressEvent) {
-        socket.emit('sync-video', { room: roomId, action: 'play', time: video.currentTime });
-      }
-    });
-
-    video.addEventListener('pause', () => {
-      if (!suppressEvent) {
-        socket.emit('sync-video', { room: roomId, action: 'pause', time: video.currentTime });
-      }
-    });
-
-    video.addEventListener('seeking', () => {
-      if (!suppressEvent) {
-        socket.emit('sync-video', { room: roomId, action: 'seek', time: video.currentTime });
-      }
-    });
-
-    socket.on('sync-video', ({ action, time }) => {
-      suppressEvent = true;
-      if (Math.abs(video.currentTime - time) > 0.3) {
-        video.currentTime = time;
-      }
-      if (action === 'play') {
-        video.play();
-      } else if (action === 'pause') {
-        video.pause();
-      } else if (action === 'seek') {
-        video.currentTime = time;
-      }
-      setTimeout(() => suppressEvent = false, 100);
-    });
-
-    function playVideo() {
-      video.play();
-    }
-
-    function pauseVideo() {
-      video.pause();
-    }
-
-    function toggleCamera() {
-      const localVideo = document.getElementById('localVideo');
-      const btn = document.getElementById('cameraBtn');
-      
-    
-      if (localStream && localVideo.srcObject) {
-        // Stop all video tracks
-        localStream.getTracks().forEach(track => track.stop());
-        localVideo.srcObject = null;
-        localStream = null;
-        btn.textContent = 'Turn Camera On';
-        socket.emit('camera-toggle', { room: roomId, on: true });
-
-    
-        // Notify peers that camera is off (optional)
-        Object.values(peers).forEach(peer => {
-          peer.getSenders().forEach(sender => {
-            if (sender.track && sender.track.kind === 'video') {
-              sender.replaceTrack(null);
+        async function startCamera() {
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+                document.getElementById('localVideo').srcObject = localStream;
+                socket.emit('ready', roomId);
+            } catch (e) {
+                console.error('Camera error:', e);
             }
-          });
+        }
+
+        function createPeer(id) {
+            const peer = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+            if (localStream) {
+                localStream.getTracks().forEach(track => peer.addTrack(track, localStream));
+            }
+            peer.onicecandidate = e => {
+                if (e.candidate) {
+                    socket.emit('ice-candidate', { target: id, candidate: e.candidate });
+                }
+            };
+
+            let remoteStream = new MediaStream();
+            peer.ontrack = e => {
+                e.streams[0].getTracks().forEach(track => remoteStream.addTrack(track));
+                let video = document.getElementById(`remote-${id}`);
+                let placeholder = document.getElementById(`placeholder-${id}`);
+
+                if (!video) {
+                    video = document.createElement('video');
+                    video.id = `remote-${id}`;
+                    video.autoplay = true;
+                    video.playsInline = true;
+                    remoteVideos.appendChild(video);
+                }
+                video.srcObject = remoteStream;
+
+                // Hide placeholder if showing
+                if (placeholder) placeholder.remove();
+            };
+
+            peer.onconnectionstatechange = () => {
+                if (peer.connectionState === 'disconnected' || peer.connectionState === 'failed') {
+                    const video = document.getElementById(`remote-${id}`);
+                    if (video) video.remove();
+                    if (!document.getElementById(`placeholder-${id}`)) {
+                        const ph = document.createElement('div');
+                        ph.className = 'placeholder';
+                        ph.id = `placeholder-${id}`;
+                        ph.innerText = 'Camera is off';
+                        remoteVideos.appendChild(ph);
+                    }
+                }
+            };
+
+            return peer;
+        }
+
+        socket.on('user-list', users => {
+            const ul = document.getElementById('userList');
+            ul.innerHTML = '';
+            users.forEach(name => {
+                const li = document.createElement('li');
+                li.textContent = name;
+                ul.appendChild(li);
+            });
         });
-    
-    } else {
-        // Turn camera back on
-        navigator.mediaDevices.getUserMedia({ video: true, audio: false }).then(stream => {
-          localStream = stream;
-          localVideo.srcObject = stream;
-          btn.textContent = 'Turn Camera Off';
-          socket.emit('camera-toggle', { room: roomId, on: false });
+
+        socket.on('offer', async ({ from, offer }) => {
+            const peer = createPeer(from);
+            peers[from] = peer;
+            await peer.setRemoteDescription(new RTCSessionDescription(offer));
+            const answer = await peer.createAnswer();
+            await peer.setLocalDescription(answer);
+            socket.emit('answer', { target: from, answer });
+        });
+
+        socket.on('answer', async ({ from, answer }) => {
+            await peers[from].setRemoteDescription(new RTCSessionDescription(answer));
+        });
+
+        socket.on('ice-candidate', ({ from, candidate }) => {
+            peers[from].addIceCandidate(new RTCIceCandidate(candidate));
+        });
+
+        socket.on('ready', async id => {
+            // Remove any old peer and video to avoid frozen duplicates
+            if (peers[id]) {
+                const oldVideo = document.getElementById(`remote-${id}`);
+                const oldPlaceholder = document.getElementById(`placeholder-${id}`);
+                if (oldVideo) oldVideo.remove();
+                if (oldPlaceholder) oldPlaceholder.remove();
+                peers[id].close();
+                delete peers[id];
+            }
+
+            const peer = createPeer(id);
+            peers[id] = peer;
+            const offer = await peer.createOffer();
+            await peer.setLocalDescription(offer);
+            socket.emit('offer', { target: id, offer });
+        });
 
 
-    
-          // Replace tracks in all peer connections
-          Object.values(peers).forEach(peer => {
-            const videoTrack = stream.getVideoTracks()[0];
-            const sender = peer.getSenders().find(s => s.track && s.track.kind === 'video');
-            if (sender) {
-              sender.replaceTrack(videoTrack);
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            if (message) {
+                socket.emit('chat', { room: roomId, msg: `${nickname}: ${message}` });
+                input.value = '';
+            }
+        }
+
+        socket.on('chat', (msg) => {
+            const chatBox = document.getElementById('chat');
+            const p = document.createElement('p');
+            p.textContent = typeof msg === 'string' ? msg : msg.msg;
+            chatBox.appendChild(p);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        });
+
+        function setVideoLink() {
+            const link = document.getElementById('videoLink').value;
+            const video = document.getElementById('videoPlayer');
+            video.src = link;
+            socket.emit('set-video', { room: roomId, link });
+        }
+
+        socket.on('set-video', ({ link }) => {
+            const video = document.getElementById('videoPlayer');
+            video.src = link;
+        });
+
+        const video = document.getElementById('videoPlayer');
+
+        video.addEventListener('play', () => {
+            if (!suppressEvent) {
+                socket.emit('sync-video', { room: roomId, action: 'play', time: video.currentTime });
+            }
+        });
+
+        video.addEventListener('pause', () => {
+            if (!suppressEvent) {
+                socket.emit('sync-video', { room: roomId, action: 'pause', time: video.currentTime });
+            }
+        });
+
+        video.addEventListener('seeking', () => {
+            if (!suppressEvent) {
+                socket.emit('sync-video', { room: roomId, action: 'seek', time: video.currentTime });
+            }
+        });
+
+        socket.on('sync-video', ({ action, time }) => {
+            suppressEvent = true;
+            if (Math.abs(video.currentTime - time) > 0.3) {
+                video.currentTime = time;
+            }
+            if (action === 'play') {
+                video.play();
+            } else if (action === 'pause') {
+                video.pause();
+            } else if (action === 'seek') {
+                video.currentTime = time;
+            }
+            setTimeout(() => suppressEvent = false, 100);
+        });
+
+        function playVideo() {
+            video.play();
+        }
+
+        function pauseVideo() {
+            video.pause();
+        }
+
+        function toggleCamera() {
+            const localVideo = document.getElementById('localVideo');
+            const btn = document.getElementById('cameraBtn');
+
+
+            if (localStream && localVideo.srcObject) {
+                // Stop all video tracks
+                localStream.getTracks().forEach(track => track.stop());
+                localVideo.srcObject = null;
+                localStream = null;
+                btn.textContent = 'Turn Camera On';
+                socket.emit('camera-toggle', { room: roomId, on: true });
+
+
+                // Notify peers that camera is off (optional)
+                Object.values(peers).forEach(peer => {
+                    peer.getSenders().forEach(sender => {
+                        if (sender.track && sender.track.kind === 'video') {
+                            sender.replaceTrack(null);
+                        }
+                    });
+                });
+
             } else {
-              peer.addTrack(videoTrack, stream);
+                // Turn camera back on
+                navigator.mediaDevices.getUserMedia({ video: true, audio: false }).then(stream => {
+                    localStream = stream;
+                    localVideo.srcObject = stream;
+                    btn.textContent = 'Turn Camera Off';
+                    socket.emit('camera-toggle', { room: roomId, on: false });
+
+
+
+                    // Replace tracks in all peer connections
+                    Object.values(peers).forEach(peer => {
+                        const videoTrack = stream.getVideoTracks()[0];
+                        const sender = peer.getSenders().find(s => s.track && s.track.kind === 'video');
+                        if (sender) {
+                            sender.replaceTrack(videoTrack);
+                        } else {
+                            peer.addTrack(videoTrack, stream);
+                        }
+                    });
+
+                }).catch(err => {
+                    console.error('Camera restart failed:', err);
+                });
             }
-          });
-    
-        }).catch(err => {
-          console.error('Camera restart failed:', err);
+        }
+        socket.on('camera-toggle', ({ from, on }) => {
+            const video = document.getElementById(`remote-${from}`);
+            const placeholder = document.getElementById(`placeholder-${from}`);
+
+            if (!on) {
+                // Remove video if exists and show placeholder
+                if (video) video.remove();
+                if (!placeholder) {
+                    const ph = document.createElement('div');
+                    ph.className = 'placeholder';
+                    ph.id = `placeholder-${from}`;
+                    ph.innerText = 'Camera is off';
+                    remoteVideos.appendChild(ph);
+                }
+            } else {
+                // Remove placeholder when camera is turned back on
+                if (placeholder) placeholder.remove();
+            }
         });
-      }
-    }
- socket.on('camera-toggle', ({ from, on }) => {
-  const video = document.getElementById(`remote-${from}`);
-  const placeholder = document.getElementById(`placeholder-${from}`);
-
-  if (!on) {
-    // Remove video if exists and show placeholder
-    if (video) video.remove();
-    if (!placeholder) {
-      const ph = document.createElement('div');
-      ph.className = 'placeholder';
-      ph.id = `placeholder-${from}`;
-      ph.innerText = 'Camera is off';
-      remoteVideos.appendChild(ph);
-    }
-  } else {
-    // Remove placeholder when camera is turned back on
-    if (placeholder) placeholder.remove();
-  }
-});
-socket.on('user-disconnected', (id) => {
-  const video = document.getElementById(`remote-${id}`);
-  const placeholder = document.getElementById(`placeholder-${id}`);
-  if (video) video.remove();
-  if (placeholder) placeholder.remove();
-  if (peers[id]) {
-    peers[id].close();
-    delete peers[id];
-  }
-});
+        socket.on('user-disconnected', (id) => {
+            const video = document.getElementById(`remote-${id}`);
+            const placeholder = document.getElementById(`placeholder-${id}`);
+            if (video) video.remove();
+            if (placeholder) placeholder.remove();
+            if (peers[id]) {
+                peers[id].close();
+                delete peers[id];
+            }
+        });
 
 
 
-    startCamera();
-  </script>
+        startCamera();
+    </script>
 </body>
+
 </html>
