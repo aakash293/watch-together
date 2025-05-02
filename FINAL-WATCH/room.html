@@ -360,17 +360,48 @@
     }
 
     function toggleCamera() {
-      const video = document.getElementById('localVideo');
+      const localVideo = document.getElementById('localVideo');
       const btn = document.getElementById('cameraBtn');
-      if (video.srcObject) {
-        video.srcObject.getTracks().forEach(track => track.stop());
-        video.srcObject = null;
+    
+      if (localStream && localVideo.srcObject) {
+        // Stop all video tracks
+        localStream.getTracks().forEach(track => track.stop());
+        localVideo.srcObject = null;
+        localStream = null;
         btn.textContent = 'Turn Camera On';
-      } else {
-        startCamera();
-        btn.textContent = 'Turn Camera Off';
+    
+        // Notify peers that camera is off (optional)
+        Object.values(peers).forEach(peer => {
+          peer.getSenders().forEach(sender => {
+            if (sender.track && sender.track.kind === 'video') {
+              sender.replaceTrack(null);
+            }
+          });
+        });
+    
+    } else {
+        // Turn camera back on
+        navigator.mediaDevices.getUserMedia({ video: true, audio: false }).then(stream => {
+          localStream = stream;
+          localVideo.srcObject = stream;
+          btn.textContent = 'Turn Camera Off';
+    
+          // Replace tracks in all peer connections
+          Object.values(peers).forEach(peer => {
+            const videoTrack = stream.getVideoTracks()[0];
+            const sender = peer.getSenders().find(s => s.track && s.track.kind === 'video');
+            if (sender) {
+              sender.replaceTrack(videoTrack);
+            } else {
+              peer.addTrack(videoTrack, stream);
+            }
+          });
+    
+        }).catch(err => {
+          console.error('Camera restart failed:', err);
+        });
       }
-    }
+  }
 
     startCamera();
   </script>
