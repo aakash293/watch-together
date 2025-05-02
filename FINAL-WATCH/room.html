@@ -424,47 +424,41 @@
         function toggleCamera() {
             const localVideo = document.getElementById('localVideo');
             const btn = document.getElementById('cameraBtn');
-
-
+        
             if (localStream && localVideo.srcObject) {
-                // Stop all video tracks
+                // Turn off camera
                 localStream.getTracks().forEach(track => track.stop());
                 localVideo.srcObject = null;
                 localStream = null;
                 btn.textContent = 'Turn Camera On';
-                socket.emit('camera-toggle', { room: roomId, on: true });
-
-
-                // Notify peers that camera is off (optional)
+                socket.emit('camera-toggle', { room: roomId, on: false });
+        
+                // Remove local tracks from peers
                 Object.values(peers).forEach(peer => {
                     peer.getSenders().forEach(sender => {
                         if (sender.track && sender.track.kind === 'video') {
-                            sender.replaceTrack(null);
+                            sender.replaceTrack(null).catch(console.error);
                         }
                     });
                 });
-
             } else {
-                // Turn camera back on
+                // Turn on camera
                 navigator.mediaDevices.getUserMedia({ video: true, audio: false }).then(stream => {
                     localStream = stream;
                     localVideo.srcObject = stream;
                     btn.textContent = 'Turn Camera Off';
-                    socket.emit('camera-toggle', { room: roomId, on: false });
-
-
-
-                    // Replace tracks in all peer connections
+                    socket.emit('camera-toggle', { room: roomId, on: true });
+        
+                    // Re-add or replace video tracks
                     Object.values(peers).forEach(peer => {
                         const videoTrack = stream.getVideoTracks()[0];
-                        const sender = peer.getSenders().find(s => s.track && s.track.kind === 'video');
+                        const sender = peer.getSenders().find(s => s.track?.kind === 'video');
                         if (sender) {
-                            sender.replaceTrack(videoTrack);
+                            sender.replaceTrack(videoTrack).catch(console.error);
                         } else {
                             peer.addTrack(videoTrack, stream);
                         }
                     });
-
                 }).catch(err => {
                     console.error('Camera restart failed:', err);
                 });
@@ -473,9 +467,9 @@
         socket.on('camera-toggle', ({ from, on }) => {
             const video = document.getElementById(`remote-${from}`);
             const placeholder = document.getElementById(`placeholder-${from}`);
-
+        
             if (!on) {
-                // Remove video if exists and show placeholder
+                // Hide video, show placeholder
                 if (video) video.remove();
                 if (!placeholder) {
                     const ph = document.createElement('div');
@@ -485,8 +479,11 @@
                     remoteVideos.appendChild(ph);
                 }
             } else {
-                // Remove placeholder when camera is turned back on
+                // Remove placeholder
                 if (placeholder) placeholder.remove();
+        
+                // Ask the peer to reinitiate if necessary (optional fix)
+                socket.emit('ready', roomId);
             }
         });
         socket.on('user-disconnected', (id) => {
