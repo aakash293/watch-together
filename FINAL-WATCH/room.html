@@ -388,6 +388,7 @@
     function toggleCamera() {
       const localVideo = document.getElementById('localVideo');
       const btn = document.getElementById('cameraBtn');
+      
     
       if (localStream && localVideo.srcObject) {
         // Stop all video tracks
@@ -395,6 +396,8 @@
         localVideo.srcObject = null;
         localStream = null;
         btn.textContent = 'Turn Camera On';
+        socket.emit('camera-toggle', { room: roomId, on: true });
+
     
         // Notify peers that camera is off (optional)
         Object.values(peers).forEach(peer => {
@@ -411,6 +414,9 @@
           localStream = stream;
           localVideo.srcObject = stream;
           btn.textContent = 'Turn Camera Off';
+          socket.emit('camera-toggle', { room: roomId, on: true });
+
+
     
           // Replace tracks in all peer connections
           Object.values(peers).forEach(peer => {
@@ -428,6 +434,23 @@
         });
       }
     }
+  socket.on('camera-toggle', ({ from, on }) => {
+    const video = document.getElementById(`remote-${from}`);
+    const placeholder = document.getElementById(`placeholder-${from}`);
+
+  if (on) {
+    if (placeholder) placeholder.remove();
+  } else {
+    if (video) video.remove();
+    if (!document.getElementById(`placeholder-${from}`)) {
+      const ph = document.createElement('div');
+      ph.className = 'placeholder';
+      ph.id = `placeholder-${from}`;
+      ph.innerText = 'Camera is off';
+      remoteVideos.appendChild(ph);
+    }
+  }
+});
 
     startCamera();
   </script>
