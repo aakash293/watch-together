@@ -65,7 +65,10 @@ io.on('connection', (socket) => {
   socket.on('sync-video', ({ room, action, time }) => {
     socket.to(room).emit('sync-video', { action, time });
   });
-    
+  socket.on('camera-toggle', ({ room, on }) => {
+  socket.to(room).emit('camera-toggle', { from: socket.id, on });
+});
+
 
   socket.on('disconnect', () => {
     const room = socket.room;
