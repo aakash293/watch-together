@@ -459,6 +459,7 @@
                             peer.addTrack(videoTrack, stream);
                         }
                     });
+                    socket.emit('ready',roomId)
                 }).catch(err => {
                     console.error('Camera restart failed:', err);
                 });
