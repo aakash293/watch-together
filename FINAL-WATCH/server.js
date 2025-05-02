@@ -75,6 +75,7 @@ io.on('connection', (socket) => {
     if (room && roomUsers[room]) {
       delete roomUsers[room][socket.id];
       io.to(room).emit('user-list', Object.values(roomUsers[room]));
+      io.to(room).emit('user-disconnected', socket.id);
     }
     console.log('A user disconnected');
   });
