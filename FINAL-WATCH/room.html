@@ -78,13 +78,21 @@
   .camera-container h3 {
     width: 100%;
   }
-  #remoteVideos video{
-    width: 48%;
-    height: 150px;
-    border-radius: 8px;
-    transform: scaleX(-1);
-    background: #000;
-  }
+  #remoteVideos video, .placeholder {
+      width: 48%;
+      height: 150px;
+      border-radius: 8px;
+      transform: scaleX(-1);
+      background: #000;
+    }
+    .placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: #999;
+      font-style: italic;
+    }
   video#localVideo {
     width: 48%;
     height: 150px;
@@ -222,11 +230,10 @@
     }
 
     function createPeer(id) {
-      const peer = new RTCPeerConnection({
-        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
-      });
-      localStream.getTracks().forEach(track => peer.addTrack(track, localStream));
-
+      const peer = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+      if (localStream) {
+        localStream.getTracks().forEach(track => peer.addTrack(track, localStream));
+      }
       peer.onicecandidate = e => {
         if (e.candidate) {
           socket.emit('ice-candidate', { target: id, candidate: e.candidate });
@@ -237,6 +244,8 @@
       peer.ontrack = e => {
         e.streams[0].getTracks().forEach(track => remoteStream.addTrack(track));
         let video = document.getElementById(`remote-${id}`);
+        let placeholder = document.getElementById(`placeholder-${id}`);
+
         if (!video) {
           video = document.createElement('video');
           video.id = `remote-${id}`;
@@ -245,6 +254,23 @@
           remoteVideos.appendChild(video);
         }
         video.srcObject = remoteStream;
+
+        // Hide placeholder if showing
+        if (placeholder) placeholder.remove();
+      };
+
+      peer.onconnectionstatechange = () => {
+        if (peer.connectionState === 'disconnected' || peer.connectionState === 'failed') {
+          const video = document.getElementById(`remote-${id}`);
+          if (video) video.remove();
+          if (!document.getElementById(`placeholder-${id}`)) {
+            const ph = document.createElement('div');
+            ph.className = 'placeholder';
+            ph.id = `placeholder-${id}`;
+            ph.innerText = 'Camera is off';
+            remoteVideos.appendChild(ph);
+          }
+        }
       };
 
       return peer;
@@ -401,7 +427,7 @@
           console.error('Camera restart failed:', err);
         });
       }
-  }
+    }
 
     startCamera();
   </script>
