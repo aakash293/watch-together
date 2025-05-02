@@ -449,17 +449,24 @@
                     btn.textContent = 'Turn Camera Off';
                     socket.emit('camera-toggle', { room: roomId, on: true });
         
-                    // Re-add or replace video tracks
-                    Object.values(peers).forEach(peer => {
-                        const videoTrack = stream.getVideoTracks()[0];
-                        const sender = peer.getSenders().find(s => s.track?.kind === 'video');
-                        if (sender) {
-                            sender.replaceTrack(videoTrack).catch(console.error);
-                        } else {
-                            peer.addTrack(videoTrack, stream);
-                        }
-                    });
-                    socket.emit('ready',roomId)
+                    // // Re-add or replace video tracks
+                    // Object.values(peers).forEach(peer => {
+                    //     const videoTrack = stream.getVideoTracks()[0];
+                    //     const sender = peer.getSenders().find(s => s.track?.kind === 'video');
+                    //     if (sender) {
+                    //         sender.replaceTrack(videoTrack).catch(console.error);
+                    //     } else {
+                    //         peer.addTrack(videoTrack, stream);
+                    //     }
+                    // });
+                    for(const id in peers){
+                        if(peers[id]){
+                            peers[id].close();
+                            delete peers[id];
+                        } 
+                    }
+                socket.emit('ready', roomId)
+                
                 }).catch(err => {
                     console.error('Camera restart failed:', err);
                 });
