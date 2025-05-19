@@ -117,16 +117,29 @@ function toggleCamera() {
         }
         socket.emit('ready', roomId);
     } else {
-        navigator.mediaDevices.getUserMedia({ video: true, audio: false }).then(stream => {
-            localStream = stream;
-            localVideo.srcObject = stream;
-            btn.textContent = 'Turn Camera Off';
-            socket.emit('camera-toggle', { room: roomId, on: true });
+    navigator.mediaDevices.getUserMedia({ video: true, audio: false }).then(stream => {
+        localStream = stream;
+        localVideo.srcObject = stream;
+        btn.textContent = 'Turn Camera Off';
+        socket.emit('camera-toggle', { room: roomId, on: true });
+
+        // Force reconnect with all users
+        for (const id in peers) {
+            if (peers[id]) {
+                peers[id].close();
+                delete peers[id];
+            }
+        }
+
+        // Notify others to send offer again
+        setTimeout(() => {
             socket.emit('ready', roomId);
-        }).catch(err => {
-            console.error('Camera restart failed:', err);
-        });
-    }
+        }, 300);
+
+    }).catch(err => {
+        console.error('Camera restart failed:', err);
+    });
+  }
 }
 
 function createPeer(id) {
