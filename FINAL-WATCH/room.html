@@ -40,7 +40,7 @@
     </style>
 </head>
 <body>
-    <header>3-1-0-7</header>
+    <header>DRISH</header>
     <div class="container">
         <div class="controls">
             <input type="text" id="videoLink" placeholder="Paste direct video link (.mp4/.mkv)" />
@@ -48,7 +48,7 @@
             <div id="playpause">
                 <button onclick="playVideo()">Play</button>
                 <button onclick="pauseVideo()">Pause</button>
-            </div> 
+            </div>
         </div>
         <div class="video-wrapper">
             <video id="videoPlayer" controls></video>
@@ -109,13 +109,7 @@ function toggleCamera() {
         localStream = null;
         btn.textContent = 'Turn Camera On';
         socket.emit('camera-toggle', { room: roomId, on: false });
-        for (const id in peers) {
-        if (peers[id]) {
-            peers[id].close();
-            delete peers[id];
-            }
-        }
-        socket.emit('ready', roomId);
+        for (const id in peers) { peers[id].close(); delete peers[id]; }
     } else {
         navigator.mediaDevices.getUserMedia({ video: true, audio: false }).then(stream => {
             localStream = stream;
@@ -255,7 +249,6 @@ socket.on('user-disconnected', (id) => {
         peers[id].close();
         delete peers[id];
     }
-    
 });
 function playVideo() {
     video.play();
@@ -266,7 +259,6 @@ function pauseVideo() {
     video.pause();
     socket.emit('sync-video', { room: roomId, action: 'pause', time: video.currentTime });
 }
-
 
 function sendMessage() {
     const input = document.getElementById('chatInput');
