@@ -95,52 +95,6 @@ async function startCamera() {
     }
 }
 
-function toggleCamera() {
-    if (window._cameraBusy) return;
-    window._cameraBusy = true;
-    setTimeout(() => window._cameraBusy = false, 1000);
-
-    const localVideo = document.getElementById('localVideo');
-    const btn = document.getElementById('cameraBtn');
-
-    if (localStream && localVideo.srcObject) {
-        localStream.getTracks().forEach(track => track.stop());
-        localVideo.srcObject = null;
-        localStream = null;
-        btn.textContent = 'Turn Camera On';
-        socket.emit('camera-toggle', { room: roomId, on: false });
-        for (const id in peers) {
-        if (peers[id]) {
-            peers[id].close();
-            delete peers[id];
-            }
-        }
-        socket.emit('ready', roomId);
-    } else {
-    navigator.mediaDevices.getUserMedia({ video: true, audio: false }).then(stream => {
-        localStream = stream;
-        localVideo.srcObject = stream;
-        btn.textContent = 'Turn Camera Off';
-        socket.emit('camera-toggle', { room: roomId, on: true });
-
-        // Force reconnect with all users
-        for (const id in peers) {
-            if (peers[id]) {
-                peers[id].close();
-                delete peers[id];
-            }
-        }
-
-        // Notify others to send offer again
-        setTimeout(() => {
-            socket.emit('ready', roomId);
-        }, 300);
-
-    }).catch(err => {
-        console.error('Camera restart failed:', err);
-    });
-  }
-}
 
 function createPeer(id) {
     const peer = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
@@ -191,6 +145,45 @@ function createPeer(id) {
     return peer;
 }
 
+function toggleCamera() {
+    if (window._cameraBusy) return;
+    window._cameraBusy = true;
+    setTimeout(() => window._cameraBusy = false, 1000);
+
+    const localVideo = document.getElementById('localVideo');
+    const btn = document.getElementById('cameraBtn');
+
+    if (localStream && localVideo.srcObject) {
+        localStream.getTracks().forEach(track => track.stop());
+        localVideo.srcObject = null;
+        localStream = null;
+        btn.textContent = 'Turn Camera On';
+        socket.emit('camera-toggle', { room: roomId, on: false });
+        for (const id in peers) { peers[id].close(); delete peers[id]; }
+    } else {
+        navigator.mediaDevices.getUserMedia({ video: true, audio: false }).then(stream => {
+            localStream = stream;
+            localVideo.srcObject = stream;
+            btn.textContent = 'Turn Camera Off';
+            socket.emit('camera-toggle', { room: roomId, on: true });
+
+            for (const id in peers) {
+                if (peers[id]) {
+                    peers[id].close();
+                    delete peers[id];
+                }
+            }
+
+            setTimeout(() => {
+                socket.emit('ready', roomId);
+            }, 300);
+
+        }).catch(err => {
+            console.error('Camera restart failed:', err);
+        });
+    }
+}
+    
 socket.on('user-list', users => {
     const ul = document.getElementById('userList');
     ul.innerHTML = '';
