@@ -93,21 +93,19 @@
 
         #remoteVideos video,
         .placeholder {
-            width: 48%;
-            height: 150px;
-            border-radius: 8px;
-            transform: scaleX(-1);
-            background: #000;
+        width: 48%;
+        height: 150px;
+        border-radius: 8px;
+        background: #000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        color: #999;
+        font-style: italic;
+        transform: none !important;
         }
 
-        .placeholder {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            color: #999;
-            font-style: italic;
-        }
 
         video#localVideo {
             width: 48%;
@@ -422,8 +420,11 @@
         function pauseVideo() {
             video.pause();
         }
-
         function toggleCamera() {
+            if (window._cameraBusy) return;         // Prevent spamming
+            window._cameraBusy = true;
+            setTimeout(() => window._cameraBusy = false, 1000); // Reset lock after 1 second
+
             const localVideo = document.getElementById('localVideo');
             const btn = document.getElementById('cameraBtn');
         
@@ -432,18 +433,14 @@
                 localStream.getTracks().forEach(track => track.stop());
                 localVideo.srcObject = null;
                 localStream = null;
-                isCameraRestarted = true;
                 btn.textContent = 'Turn Camera On';
                 socket.emit('camera-toggle', { room: roomId, on: false });
         
-                // Remove local tracks from peers
-                Object.values(peers).forEach(peer => {
-                    peer.getSenders().forEach(sender => {
-                        if (sender.track && sender.track.kind === 'video') {
-                            sender.replaceTrack(null).catch(console.error);
-                        }
-                    });
-                });
+                // Close and remove all peers
+                for (const id in peers) {
+                    peers[id].close();
+                    delete peers[id];
+                }
             } else {
                 // Turn on camera
                 navigator.mediaDevices.getUserMedia({ video: true, audio: false }).then(stream => {
@@ -452,29 +449,14 @@
                     btn.textContent = 'Turn Camera Off';
                     socket.emit('camera-toggle', { room: roomId, on: true });
         
-                    // // Re-add or replace video tracks
-                    // Object.values(peers).forEach(peer => {
-                    //     const videoTrack = stream.getVideoTracks()[0];
-                    //     const sender = peer.getSenders().find(s => s.track?.kind === 'video');
-                    //     if (sender) {
-                    //         sender.replaceTrack(videoTrack).catch(console.error);
-                    //     } else {
-                    //         peer.addTrack(videoTrack, stream);
-                    //     }
-                    // });
-                    for(const id in peers){
-                        if(peers[id]){
-                            peers[id].close();
-                            delete peers[id];
-                        } 
-                    }
-                socket.emit('ready', roomId)
-                
+                    // Reconnect with all peers by notifying others
+                    socket.emit('ready', roomId);
                 }).catch(err => {
                     console.error('Camera restart failed:', err);
                 });
             }
         }
+
         socket.on('camera-toggle', ({ from, on }) => {
             const video = document.getElementById(`remote-${from}`);
             const placeholder = document.getElementById(`placeholder-${from}`);
@@ -494,7 +476,7 @@
                 if (placeholder) placeholder.remove();
         
                 // Ask the peer to reinitiate if necessary (optional fix)
-                socket.emit('ready', roomId);
+                setTimeout(() => socket.emit('ready', roomId), 300);
             }
         });
         socket.on('user-disconnected', (id) => {
