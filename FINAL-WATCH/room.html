@@ -45,10 +45,10 @@
         <div class="controls">
             <input type="text" id="videoLink" placeholder="Paste direct video link (.mp4/.mkv)" />
             <button onclick="setVideoLink()">Set Video</button>
-<!--             <div id="playpause">
+            <div id="playpause">
                 <button onclick="playVideo()">Play</button>
                 <button onclick="pauseVideo()">Pause</button>
-            </div> -->
+            </div> 
         </div>
         <div class="video-wrapper">
             <video id="videoPlayer" controls></video>
@@ -109,7 +109,13 @@ function toggleCamera() {
         localStream = null;
         btn.textContent = 'Turn Camera On';
         socket.emit('camera-toggle', { room: roomId, on: false });
-        for (const id in peers) { peers[id].close(); delete peers[id]; }
+        for (const id in peers) {
+        if (peers[id]) {
+            peers[id].close();
+            delete peers[id];
+            }
+        }
+        socket.emit('ready', roomId);
     } else {
         navigator.mediaDevices.getUserMedia({ video: true, audio: false }).then(stream => {
             localStream = stream;
@@ -249,7 +255,18 @@ socket.on('user-disconnected', (id) => {
         peers[id].close();
         delete peers[id];
     }
+    
 });
+function playVideo() {
+    video.play();
+    socket.emit('sync-video', { room: roomId, action: 'play', time: video.currentTime });
+}
+
+function pauseVideo() {
+    video.pause();
+    socket.emit('sync-video', { room: roomId, action: 'pause', time: video.currentTime });
+}
+
 
 function sendMessage() {
     const input = document.getElementById('chatInput');
