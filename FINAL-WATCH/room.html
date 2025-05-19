@@ -193,7 +193,7 @@
 </head>
 
 <body>
-    <header>DRISH</header>
+    <header>3-1-0-7</header>
     <div class="container">
         <div class="controls">
             <input type="text" id="videoLink" placeholder="Paste direct video link (.mp4/.mkv)" />
@@ -267,7 +267,8 @@
 
             let remoteStream = new MediaStream();
             peer.ontrack = e => {
-                e.streams[0].getTracks().forEach(track => remoteStream.addTrack(track));
+                if (!remoteStream) remoteStream = new MediaStream();
+                remoteStream = e.streams[0]; // avoid duplicates
                 let video = document.getElementById(`remote-${id}`);
                 let placeholder = document.getElementById(`placeholder-${id}`);
 
@@ -283,20 +284,24 @@
                 // Hide placeholder if showing
                 if (placeholder) placeholder.remove();
             };
-
             peer.onconnectionstatechange = () => {
                 if (peer.connectionState === 'disconnected' || peer.connectionState === 'failed') {
-                    const video = document.getElementById(`remote-${id}`);
-                    if (video) video.remove();
-                    if (!document.getElementById(`placeholder-${id}`)) {
-                        const ph = document.createElement('div');
-                        ph.className = 'placeholder';
-                        ph.id = `placeholder-${id}`;
-                        ph.innerText = 'Camera is off';
-                        remoteVideos.appendChild(ph);
-                    }
+                    setTimeout(() => {
+                        if (peer.connectionState === 'disconnected' || peer.connectionState === 'failed') {
+                            const video = document.getElementById(`remote-${id}`);
+                            if (video) video.remove();
+                            if (!document.getElementById(`placeholder-${id}`)) {
+                                const ph = document.createElement('div');
+                                ph.className = 'placeholder';
+                                ph.id = `placeholder-${id}`;
+                                ph.innerText = 'Camera is off';
+                                remoteVideos.appendChild(ph);
+                            }
+                        }
+                    }, 1500); // Wait to ensure it doesn't reconnect right after
                 }
             };
+
 
             return peer;
         }
@@ -474,7 +479,12 @@
             } else {
                 // Remove placeholder
                 if (placeholder) placeholder.remove();
-        
+                if (peers[from]) {
+                    peers[from].close();
+                    delete peers[from];
+                    const oldVideo = document.getElementById(`remote-${from}`);
+                    if (oldVideo) oldVideo.remove();
+                }
                 // Ask the peer to reinitiate if necessary (optional fix)
                 setTimeout(() => socket.emit('ready', roomId), 300);
             }
