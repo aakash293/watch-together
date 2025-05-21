@@ -88,7 +88,7 @@ socket.emit('join', { room: roomId, name: nickname });
 
 async function startCamera() {
     try {
-        localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        localStream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 640 }, height: { ideal: 480 } }, audio: false });
         document.getElementById('localVideo').srcObject = localStream;
         socket.emit('ready', roomId);
     } catch (e) {
@@ -112,7 +112,7 @@ function toggleCamera() {
         socket.emit('camera-toggle', { room: roomId, on: false });
         for (const id in peers) { peers[id].close(); delete peers[id]; }
     } else {
-        navigator.mediaDevices.getUserMedia({ video: true, audio: false }).then(stream => {
+        navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 640 }, height: { ideal: 480 } }, audio: false }).then(stream => {
             localStream = stream;
             localVideo.srcObject = stream;
             btn.textContent = 'Turn Camera Off';
