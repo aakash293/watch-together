@@ -36,8 +36,7 @@
             .controls { flex-direction: column; }
             #camera-local { display: flex; flex-wrap: nowrap; justify-content: space-evenly; }
             div#playpause { display: flex; flex-wrap: nowrap; justify-content: space-evenly; }
-            #playpause button { padding: 10px 60px; }
-            div#chatNotification { display: none; background: #e50914; color: white;font-size: 12px; padding: 5px 10px; margin-bottom: 8px; border-radius: 4px;width: fit-content;animation: fadeInOut 4s forwards;}
+            #playpause button { padding: 10px 60px;}
         }
         @keyframes fadeInOut {
             0%   { opacity: 0; transform: translateY(-10px); }
@@ -65,8 +64,7 @@
             <h3>Users in Room</h3>
             <ul id="userList"></ul><br>
             <h3>Chat</h3>
-            <div id="chatNotification" >
-                🔔 New Message
+            <div id="chatNotification" style:"display: none; background: #e50914; color: white;font-size: 12px; padding: 5px 10px; margin-bottom: 8px; border-radius: 4px;width: fit-content;animation: fadeInOut 4s forwards;">🔔 New Message
             </div>
             <div id="chat" class="chat-box"></div>
             <div class="chat-input">
@@ -298,22 +296,24 @@ socket.on('chat', (msg) => {
     const chatBox = document.getElementById('chat');
     const chatInput = document.getElementById('chatInput');
     const notification = document.getElementById('chatNotification');
-    
+
+    const text = typeof msg === 'string' ? msg : msg.msg;
+
     const p = document.createElement('p');
-    p.textContent = typeof msg === 'string' ? msg : msg.msg;
+    p.textContent = text;
     chatBox.appendChild(p);
     chatBox.scrollTop = chatBox.scrollHeight;
 
     if (!text.startsWith(nickname + ':')) {
-            document.getElementById('chatSound').play().catch(() => {});
-        }
-    
+        document.getElementById('chatSound').play().catch(() => {});
+    }
+
     if (document.activeElement !== chatInput) {
         notification.style.display = 'block';
-        // Auto-hide after animation (4s)
         setTimeout(() => notification.style.display = 'none', 4000);
     }
 });
+
 
 function setVideoLink() {
     const link = document.getElementById('videoLink').value;
