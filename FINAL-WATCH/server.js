@@ -2,6 +2,9 @@ const express = require('express');
 const http = require('http');
 const path = require('path');
 const axios = require('axios');
+const compression = require('compression');
+app.use(compression());
+
 
 const { Server } = require('socket.io');
 
@@ -29,7 +32,9 @@ app.get('/proxy', async (req, res) => {
   try {
     const response = await axios.get(videoUrl, {
       responseType: 'stream',
-      headers: { 'Range': req.headers.range || '' },
+      headers: {
+        'Range': req.headers.range || ''
+      },
       timeout: 10000
     });
 
@@ -38,19 +43,31 @@ app.get('/proxy', async (req, res) => {
       videoUrl.endsWith('.mp4') ? 'video/mp4' : 'application/octet-stream'
     );
 
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Expose-Headers', 'Content-Range, Accept-Ranges, Content-Length, Content-Type');
-    res.setHeader('Content-Type', contentType);
+    const headers = {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Expose-Headers': 'Content-Range, Accept-Ranges, Content-Length, Content-Type',
+      'Content-Type': contentType
+    };
 
-    if (response.headers['content-length']) res.setHeader('Content-Length', response.headers['content-length']);
-    if (response.headers['accept-ranges']) res.setHeader('Accept-Ranges', 'bytes');
+    if (response.headers['content-length']) {
+      headers['Content-Length'] = response.headers['content-length'];
+    }
 
+    if (response.headers['accept-ranges']) {
+      headers['Accept-Ranges'] = response.headers['accept-ranges'];
+    }
+
+    if (response.headers['content-range']) {
+      headers['Content-Range'] = response.headers['content-range'];
+    }
+
+    res.writeHead(response.status || 200, headers);
+
+    // Stream directly to the client without buffering
     response.data.pipe(res);
+
   } catch (err) {
-    console.error('Proxy error:', err.message);
-    res.status(500).send('Proxy failed: ' + err.message);
-  }
-});
+
 
 io.on('connection', (socket) => {
   console.log('A user connected');
