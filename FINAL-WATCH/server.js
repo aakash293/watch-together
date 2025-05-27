@@ -22,7 +22,6 @@ app.get('/room.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'room.html'));
 });
 
-// Video proxy route for CORS-safe streaming
 app.get('/proxy', async (req, res) => {
   const videoUrl = req.query.url;
   if (!videoUrl) return res.status(400).send('Missing video URL');
@@ -30,20 +29,26 @@ app.get('/proxy', async (req, res) => {
   try {
     const response = await axios.get(videoUrl, {
       responseType: 'stream',
-      headers: {
-        'Range': req.headers.range || '',
-      }
+      headers: { 'Range': req.headers.range || '' },
+      timeout: 10000
     });
 
+    const contentType = response.headers['content-type'] || (
+      videoUrl.endsWith('.mkv') ? 'video/x-matroska' :
+      videoUrl.endsWith('.mp4') ? 'video/mp4' : 'application/octet-stream'
+    );
+
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Content-Type', response.headers['content-type'] || 'video/mp4');
+    res.setHeader('Access-Control-Expose-Headers', 'Content-Range, Accept-Ranges, Content-Length, Content-Type');
+    res.setHeader('Content-Type', contentType);
+
     if (response.headers['content-length']) res.setHeader('Content-Length', response.headers['content-length']);
     if (response.headers['accept-ranges']) res.setHeader('Accept-Ranges', 'bytes');
 
     response.data.pipe(res);
   } catch (err) {
     console.error('Proxy error:', err.message);
-    res.status(500).send('Proxy failed');
+    res.status(500).send('Proxy failed: ' + err.message);
   }
 });
 
