@@ -5,6 +5,7 @@
     "main": "server.js",
     "scripts": {
       "start": "node server.js"
+      "proxy": "node video-proxy.js"
     },
     "keywords": ["video", "sync", "socket.io", "watch-together", "express"],
     "author": "Your Name",
