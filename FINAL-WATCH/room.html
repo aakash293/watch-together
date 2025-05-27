@@ -357,15 +357,23 @@ socket.on('chat', (msg) => {
 function setVideoLink() {
     const link = document.getElementById('videoLink').value;
     const video = document.getElementById('videoPlayer');
-    video.src = link;
+
+    // Proxy the video through your own server
+    const proxyLink = `http://localhost:4000/proxy?url=${encodeURIComponent(link)}`;
+
+    video.src = proxyLink;
+
+    // Send the original link to others (they will also use proxy on their side)
     socket.emit('set-video', { room: roomId, link });
 }
 
 socket.on('set-video', ({ link }) => {
+    const proxyLink = `http://localhost:4000/proxy?url=${encodeURIComponent(link)}`;
     const video = document.getElementById('videoPlayer');
-    video.src = link;
+    video.src = proxyLink;
 });
 
+    
 const video = document.getElementById('videoPlayer');
 video.addEventListener('play', () => { if (!suppressEvent) socket.emit('sync-video', { room: roomId, action: 'play', time: video.currentTime }); });
 video.addEventListener('pause', () => { if (!suppressEvent) socket.emit('sync-video', { room: roomId, action: 'pause', time: video.currentTime }); });
