@@ -71,7 +71,7 @@ app.get('/proxy', async (req, res) => {
     console.error('Proxy error:', err.message);
     res.status(500).send('Proxy failed: ' + err.message);
   }
-})
+});
 
 
 io.on('connection', (socket) => {
