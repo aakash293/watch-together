@@ -111,6 +111,9 @@ io.on('connection', (socket) => {
   socket.on('set-video', ({ room, link }) => {
     socket.to(room).emit('set-video', { link });
   });
+  socket.on('set-subtitle', ({ room, content }) => {
+     io.to(room).emit('set-subtitle', { content });
+  });
 
   socket.on('video-action', ({ room, action, time }) => { 
     socket.to(room).emit('video-action', { action, time }); 
