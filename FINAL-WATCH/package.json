@@ -4,7 +4,7 @@
     "description": "Watch movies together with real-time video sync, chat, and cameras",
     "main": "server.js",
     "scripts": {
-      "start": "node server.js"
+      "start": "node server.js",
       "proxy": "node video-proxy.js"
     },
     "keywords": ["video", "sync", "socket.io", "watch-together", "express"],
