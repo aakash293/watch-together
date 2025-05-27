@@ -3,12 +3,13 @@ const http = require('http');
 const path = require('path');
 const axios = require('axios');
 const compression = require('compression');
-app.use(compression());
+
 
 
 const { Server } = require('socket.io');
 
 const app = express();
+app.use(compression());
 const server = http.createServer(app);
 const io = new Server(server);
 
