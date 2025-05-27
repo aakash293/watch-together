@@ -38,6 +38,26 @@
             div#playpause { display: flex; flex-wrap: nowrap; justify-content: space-evenly; }
             #playpause button { padding: 10px 60px;}
         }
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background: #1e1e1e;
+            display: flex;
+            justify-content: space-evenly;
+            padding: 10px;
+            z-index: 999;
+        }
+        .bottom-nav button {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: white;
+            cursor: pointer;
+        }
+        .tab-content {
+            display: none;
+        }
         @keyframes fadeInOut {
             0%   { opacity: 0; transform: translateY(-10px); }
             10%  { opacity: 1; transform: translateY(0); }
@@ -52,7 +72,8 @@
             <video id="videoPlayer" controls></video>
         </div>
      <div class="container">
-        <div class="camera-container">
+       <div id="tab-users" class="tab-content">
+           <div class="camera-container">
             <div id="remoteVideos"></div>
             <div><video id="localVideo" autoplay muted playsinline></video></div>
         </div>
@@ -60,7 +81,9 @@
             <button onclick="toggleCamera()" id="cameraBtn">Turn Camera Off</button>
             <button onclick="reconnectPeers()">Reconnect</button>
         </div>
-        <div class="chat-container">
+        </div>
+       <div id="tab-chat" class="tab-content" style="display: none;">
+            <div class="chat-container">
             <h3>Users in Room</h3>
             <ul id="userList"></ul><br>
             <h3>Chat</h3>
@@ -72,7 +95,9 @@
                 <button onclick="sendMessage()">Send</button>
             </div>
         </div>
-          <div class="controls">
+       </div>
+       <div id="tab-search" class="tab-content" style="display: none;">
+            <div class="controls">
             <input type="text" id="videoLink" placeholder="Paste direct video link (.mp4/.mkv)" />
             <button onclick="setVideoLink()">Set Video</button>
             <div id="playpause">
@@ -80,6 +105,14 @@
                 <button onclick="pauseVideo()">Pause</button>
             </div>
         </div>
+       </div>
+      
+        <div id="bottomNav" class="bottom-nav">
+                <button onclick="showTab('users')">👤</button>
+                <button onclick="showTab('chat')">💬</button>
+                <button onclick="showTab('search')">🔍</button>
+        </div>
+
     </div>
 
 <script src="/socket.io/socket.io.js"></script>
@@ -144,7 +177,13 @@ function reconnectPeers() {
     console.log("Reconnect requested.");
     
 }
-
+function showTab(tabName) {
+    const tabs = ['users', 'chat', 'search'];
+    tabs.forEach(t => {
+        const el = document.getElementById('tab-' + t);
+        if (el) el.style.display = (t === tabName ? 'block' : 'none');
+    });
+}
 
 function createPeer(id) {
     const peer = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
