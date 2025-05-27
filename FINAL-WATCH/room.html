@@ -359,7 +359,8 @@ function setVideoLink() {
     const video = document.getElementById('videoPlayer');
 
     // Proxy the video through your own server
-    const proxyLink = `http://localhost:4000/proxy?url=${encodeURIComponent(link)}`;
+    const proxyLink = `/proxy?url=${encodeURIComponent(link)}`;
+
 
     video.src = proxyLink;
 
@@ -368,7 +369,7 @@ function setVideoLink() {
 }
 
 socket.on('set-video', ({ link }) => {
-    const proxyLink = `http://localhost:4000/proxy?url=${encodeURIComponent(link)}`;
+    const proxyLink = `/proxy?url=${encodeURIComponent(link)}`;
     const video = document.getElementById('videoPlayer');
     video.src = proxyLink;
 });
