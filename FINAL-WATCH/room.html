@@ -358,21 +358,39 @@ function setVideoLink() {
     const link = document.getElementById('videoLink').value;
     const video = document.getElementById('videoPlayer');
 
-    // Proxy the video through your own server
-    const proxyLink = `/proxy?url=${encodeURIComponent(link)}`;
+    // Try direct link first to avoid proxy lag
+    fetch(link, { method: 'HEAD' })
+        .then(res => {
+            if (res.ok && res.headers.get('accept-ranges')) {
+                video.src = link; // No proxy needed
+            } else {
+                video.src = `/proxy?url=${encodeURIComponent(link)}`; // Fallback to proxy
+            }
+        })
+        .catch(() => {
+            video.src = `/proxy?url=${encodeURIComponent(link)}`;
+        });
 
-
-    video.src = proxyLink;
-
-    // Send the original link to others (they will also use proxy on their side)
     socket.emit('set-video', { room: roomId, link });
 }
 
 socket.on('set-video', ({ link }) => {
-    const proxyLink = `/proxy?url=${encodeURIComponent(link)}`;
     const video = document.getElementById('videoPlayer');
-    video.src = proxyLink;
+
+    // First try direct streaming
+    fetch(link, { method: 'HEAD' })
+        .then(res => {
+            if (res.ok && res.headers.get('accept-ranges')) {
+                video.src = link; // Direct link
+            } else {
+                video.src = `/proxy?url=${encodeURIComponent(link)}`; // Fallback to proxy
+            }
+        })
+        .catch(() => {
+            video.src = `/proxy?url=${encodeURIComponent(link)}`; // Fallback if fetch fails
+        });
 });
+
 
     
 const video = document.getElementById('videoPlayer');
