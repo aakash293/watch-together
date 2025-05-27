@@ -67,7 +67,8 @@
     </style>
 </head>
 <body>
-    <header>DRISH v31.07</header>
+    <header>DRISH v31.07<div id="chatNotification" style="display: none; background: #e50914; color: white;font-size: 10px; padding: 10px 10px; margin-bottom: 8px; border-radius: 4px;width: fit-content;animation: fadeInOut 4s forwards;">🔔</div>
+    </header>
      <div class="video-wrapper">
             <video id="videoPlayer" controls>
                   <track id="subtitleTrack" kind="subtitles" srclang="en" label="English">
@@ -111,10 +112,7 @@
      </div>
     <div id="bottomNav" class="bottom-nav">
                 <button onclick="showTab('users')">👤</button>
-                <button onclick="showTab('chat')">💬
-                <div id="chatNotification" style:"display: none; background: #e50914; color: white;font-size: 12px; padding: 5px 10px; margin-bottom: 8px; border-radius: 4px;width: fit-content;animation: fadeInOut 4s forwards;">🔔
-                </div>
-                </button>
+                <button onclick="showTab('chat')">💬</button>
                 <button onclick="showTab('search')">🔍</button>
     </div>
 
