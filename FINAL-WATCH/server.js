@@ -67,7 +67,7 @@ app.get('/proxy', async (req, res) => {
     // Stream directly to the client without buffering
     response.data.pipe(res);
 
-  } catch (err) 
+  } catch (err) {
     console.error('Proxy error:', err.message);
     res.status(500).send('Proxy failed: ' + err.message);
   }
