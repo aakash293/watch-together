@@ -360,6 +360,9 @@ socket.on('chat', (msg) => {
     }
 });
 
+socket.on('subtitle-set', ({ subtitles }) => {
+  injectSubtitles(subtitles);
+});
 
 function setVideoLink() {
     const link = document.getElementById('videoLink').value;
@@ -445,27 +448,40 @@ function uploadSubtitles() {
   })
     .then(res => res.json())
     .then(data => {
-      const video = document.getElementById('videoPlayer');
-      // Remove any old tracks
-      Array.from(video.querySelectorAll('track')).forEach(t => t.remove());
-
-      data.subtitles.forEach((url, i) => {
-        const track = document.createElement('track');
-        track.src = url;
-        track.kind = 'subtitles';
-        track.label = `Subtitle ${i + 1}`;
-        track.srclang = 'en';
-        if (i === 0) track.default = true;
-        video.appendChild(track);
-      });
-
-      alert('Subtitles loaded!');
+      socket.emit('subtitle-set', { room: roomId, subtitles: data.subtitles });
+      injectSubtitles(data.subtitles); // also show it on the uploader's screen
     })
+
     .catch(err => {
       console.error('Subtitle upload failed:', err);
       alert('Failed to upload or convert subtitles.');
     });
 }
+
+function injectSubtitles(subtitles) {
+  const video = document.getElementById('videoPlayer');
+  Array.from(video.querySelectorAll('track')).forEach(t => t.remove());
+
+  subtitles.forEach((url, i) => {
+    const track = document.createElement('track');
+    track.src = url;
+    track.kind = 'subtitles';
+    track.label = `Subtitle ${i + 1}`;
+    track.srclang = 'en';
+    if (i === 0) track.default = true;
+    video.appendChild(track);
+  });
+
+  // Optional: force showing the first track
+  const checkReady = setInterval(() => {
+    const tracks = video.textTracks;
+    if (tracks.length > 0) {
+      tracks[0].mode = 'showing';
+      clearInterval(checkReady);
+    }
+  }, 500);
+}
+    
     
 const video = document.getElementById('videoPlayer');
 video.addEventListener('play', () => { if (!suppressEvent) socket.emit('sync-video', { room: roomId, action: 'play', time: video.currentTime }); });
@@ -481,7 +497,6 @@ socket.on('sync-video', ({ action, time }) => {
 });
 
 startCamera();
-
 </script>
 <audio id="chatSound" src="message.mp3" preload="auto"></audio>
 </body>
