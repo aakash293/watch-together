@@ -474,12 +474,13 @@ function injectSubtitles(subtitles) {
 
   // Optional: force showing the first track
   const checkReady = setInterval(() => {
-    const tracks = video.textTracks;
-    if (tracks.length > 0) {
-      tracks[0].mode = 'showing';
-      clearInterval(checkReady);
-    }
-  }, 500);
+  const video = document.getElementById('videoPlayer');
+  const tracks = video.textTracks;
+  if (tracks.length > 0) {
+    tracks[0].mode = 'showing'; // Force it to display
+    clearInterval(checkReady);
+  }
+}, 500);
 }
     
     
