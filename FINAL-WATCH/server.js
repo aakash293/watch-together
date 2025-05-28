@@ -3,8 +3,11 @@ const http = require('http');
 const path = require('path');
 const axios = require('axios');
 const compression = require('compression');
-
-
+const multer = require('multer');
+const AdmZip = require('adm-zip');
+const fs = require('fs');
+const { Transform } = require('stream');
+const srt2vtt = require('srt-to-vtt');
 
 const { Server } = require('socket.io');
 
@@ -15,6 +18,9 @@ const io = new Server(server);
 
 // Serve static files like index.html, room.html, client.js
 app.use(express.static(path.join(__dirname)));
+const upload = multer({ dest: 'uploads/' });
+app.use('/subtitles', express.static(path.join(__dirname, 'public/subtitles')));
+
 
 const roomUsers = {};
 
@@ -71,6 +77,46 @@ app.get('/proxy', async (req, res) => {
     console.error('Proxy error:', err.message);
     res.status(500).send('Proxy failed: ' + err.message);
   }
+});
+
+app.post('/upload-subtitles', upload.single('zip'), async (req, res) => {
+  const zipPath = req.file.path;
+  const zip = new AdmZip(zipPath);
+  const entries = zip.getEntries();
+
+  const subtitleDir = path.join(__dirname, 'public/subtitles');
+  if (!fs.existsSync(subtitleDir)) fs.mkdirSync(subtitleDir, { recursive: true });
+
+  const vttFiles = [];
+
+  for (const entry of entries) {
+    if (entry.entryName.endsWith('.srt') || entry.entryName.endsWith('.sub')) {
+      const raw = entry.getData();
+      const baseName = path.basename(entry.entryName, path.extname(entry.entryName));
+      const vttName = `${baseName}-${Date.now()}.vtt`;
+      const vttPath = path.join(subtitleDir, vttName);
+
+      const readStream = new Transform({
+        transform(chunk, _, cb) { cb(null, chunk); }
+      });
+      readStream.end(raw);
+      const writeStream = fs.createWriteStream(vttPath);
+
+      await new Promise((resolve, reject) => {
+        readStream
+          .pipe(srt2vtt())
+          .pipe(writeStream)
+          .on('finish', () => {
+            vttFiles.push(`/subtitles/${vttName}`);
+            resolve();
+          })
+          .on('error', reject);
+      });
+    }
+  }
+
+  fs.unlinkSync(zipPath); // cleanup uploaded zip
+  res.json({ subtitles: vttFiles });
 });
 
 
