@@ -160,6 +160,10 @@ io.on('connection', (socket) => {
   socket.on('set-subtitle', ({ room, content }) => {
      io.to(room).emit('set-subtitle', { content });
   });
+  socket.on('subtitle-set', ({ room, subtitles }) => {
+  io.to(room).emit('subtitle-set', { subtitles });
+  });
+
 
   socket.on('video-action', ({ room, action, time }) => { 
     socket.to(room).emit('video-action', { action, time }); 
