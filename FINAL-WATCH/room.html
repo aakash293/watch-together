@@ -105,8 +105,10 @@
                 <button onclick="playVideo()">Play</button>
                 <button onclick="pauseVideo()">Pause</button>
             </div>
-                <input type="file" id="subtitleFile" accept=".vtt" />
-                <button onclick="loadSubtitles()">Load Subtitles</button>
+            <div class="subtitle-upload">
+                  <input type="file" id="subtitleZip" accept=".zip" />
+                  <button onclick="uploadSubtitles()">Upload Subtitles</button>
+            </div>
         </div>
        </div>
      </div>
@@ -415,6 +417,7 @@ function loadSubtitles() {
     reader.readAsText(file);
 }
 
+    
 socket.on('set-subtitle', ({ content }) => {
     const track = document.getElementById('subtitleTrack');
     const blob = new Blob([content], { type: 'text/vtt' });
@@ -423,7 +426,45 @@ socket.on('set-subtitle', ({ content }) => {
     track.default = true;
 });
 
-  
+function uploadSubtitles() {
+  const fileInput = document.getElementById('subtitleZip');
+  const file = fileInput.files[0];
+  if (!file) {
+    alert('Please select a .zip file containing .srt or .sub files.');
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append('zip', file);
+
+  fetch('/upload-subtitles', {
+    method: 'POST',
+    body: formData
+  })
+    .then(res => res.json())
+    .then(data => {
+      const video = document.getElementById('videoPlayer');
+      // Remove any old tracks
+      Array.from(video.querySelectorAll('track')).forEach(t => t.remove());
+
+      data.subtitles.forEach((url, i) => {
+        const track = document.createElement('track');
+        track.src = url;
+        track.kind = 'subtitles';
+        track.label = `Subtitle ${i + 1}`;
+        track.srclang = 'en';
+        if (i === 0) track.default = true;
+        video.appendChild(track);
+      });
+
+      alert('Subtitles loaded!');
+    })
+    .catch(err => {
+      console.error('Subtitle upload failed:', err);
+      alert('Failed to upload or convert subtitles.');
+    });
+}
+    
 const video = document.getElementById('videoPlayer');
 video.addEventListener('play', () => { if (!suppressEvent) socket.emit('sync-video', { room: roomId, action: 'play', time: video.currentTime }); });
 video.addEventListener('pause', () => { if (!suppressEvent) socket.emit('sync-video', { room: roomId, action: 'pause', time: video.currentTime }); });
