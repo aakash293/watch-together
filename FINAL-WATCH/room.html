@@ -59,20 +59,7 @@
         .tab-content {
             display: none;
         }
-        #fullscreenChatBtn {
-          position: absolute;
-          top: 40px;
-          left: 20px;
-          z-index: 9999;
-          padding: 10px 14px;
-          background: rgba(0, 0, 0, 0.8);
-          color: white;
-          border: none;
-          border-radius: 5px;
-          font-size: 10px;
-          display: none;
-          cursor: pointer;
-        }
+        
 
         @keyframes fadeInOut {
             0%   { opacity: 0; transform: translateY(-10px); }
@@ -90,7 +77,6 @@
      <div class="video-wrapper">
             <video id="videoPlayer" controls>
                   <track id="subtitleTrack" kind="subtitles" srclang="en" label="English">
-                  <button id="fullscreenChatBtn" onclick="exitFullscreenAndOpenChat()">💬 Chat</button>
             </video>
         </div>
      <div class="container">
@@ -519,24 +505,6 @@ socket.on('sync-video', ({ action, time }) => {
     setTimeout(() => suppressEvent = false, 100);
 });
 
-    
-// Show/hide the button based on fullscreen state
-document.addEventListener('fullscreenchange', () => {
-  const btn = document.getElementById('fullscreenChatBtn');
-  const isFull = !!document.fullscreenElement;
-  btn.style.display = isFull ? 'block' : 'none';
-});
-
-// Button click handler: exit fullscreen & open chat tab
-function exitFullscreenAndOpenChat() {
-  if (document.fullscreenElement) {
-    document.exitFullscreen().then(() => {
-      showTab('chat'); // assumes showTab('chat') is defined to open #tab-chat
-    });
-  } else {
-    showTab('chat');
-  }
-}
     
 
 startCamera();
