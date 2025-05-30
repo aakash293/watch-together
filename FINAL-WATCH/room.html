@@ -123,8 +123,8 @@ button:active::after {
 #remoteVideos video,
 #localVideo,
 .placeholder {
-  width: 160px;
-  height: 160px;
+  width: 150px;
+  height: 150px;
   border-radius: 12px;
   background: #000;
   object-fit: cover;
@@ -226,9 +226,9 @@ button:active::after {
 }
 @media (max-width: 768px) {
   .controls, .camera-container {
-    display : flex;
-    flex-direction: row;  
+    display : flex;  
     flex-warp: warp;
+    justify-content: space-evenly;
     align-items: center;
   }
   input[type="text"] {
