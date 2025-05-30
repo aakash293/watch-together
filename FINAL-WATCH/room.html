@@ -44,6 +44,7 @@ header {
   display: flex;
   flex-direction: column;
   gap: 30px;
+  margin-bottom: 20%; 
 }
 .video-wrapper {
   position: relative;
@@ -169,6 +170,7 @@ button:active::after {
   border: none;
   font-size: 22px;
   color: white;
+  padding : 0;
   transition: color 0.3s;
 }
 .bottom-nav button:hover {
@@ -182,6 +184,7 @@ button:active::after {
   border-radius: 8px;
   margin-left: 15px;
 }
+
 @keyframes fadeInOut {
   0% { opacity: 0; transform: translateY(-5px); }
   10%, 90% { opacity: 1; transform: translateY(0); }
@@ -195,6 +198,12 @@ button:active::after {
   input[type="text"] {
     width: 100%;
   }
+  #camera-local{
+        display: flex;
+        justify-content: space-evenly;
+        align-content: center;
+        gap: 10px;
+        }
 }
 </style>
 </head>
@@ -215,8 +224,8 @@ button:active::after {
             <div><video id="localVideo" autoplay muted playsinline></video></div>
         </div>
         <div id="camera-local">
-            <button onclick="toggleCamera()" id="cameraBtn">Turn Camera Off</button>
-            <button onclick="reconnectPeers()">Reconnect</button>
+            <button onclick="toggleCamera()" id="cameraBtn" style="width: -webkit-fill-available;" >Turn Camera Off</button>
+            <button onclick="reconnectPeers()" style="width: -webkit-fill-available;" >Reconnect</button>
         </div>
         </div>
        <div id="tab-chat" class="tab-content" style="display: none;">
@@ -252,9 +261,9 @@ button:active::after {
        </div>
      </div>
     <div id="bottomNav" class="bottom-nav">
-                <button onclick="showTab('users')"><i class="fa fa-user-circle-o" style="font-size:16px"></i></button>
-                <button onclick="showTab('chat')"><i class="fa fa-envelope-o" style="font-size:16px"></i></button>
-                <button onclick="showTab('search')"><i class="fa fa-gear" style="font-size:16px"></i></button>
+                <button onclick="showTab('users')"><i class="fa fa-user-circle-o" style="font-size:24px"></i></button>
+                <button onclick="showTab('chat')"><i class="fa fa-envelope-o" style="font-size:24px"></i></button>
+                <button onclick="showTab('search')"><i class="fa fa-gear" style="font-size:24px"></i></button>
     </div>
 
     
