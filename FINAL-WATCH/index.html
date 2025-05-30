@@ -1,19 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Create or Join Room</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
- <style>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
     * {
       box-sizing: border-box;
-    }
-    body {
       margin: 0;
       padding: 0;
+    }
+
+    body {
       font-family: 'Roboto', sans-serif;
-      background-color: #141414;
+      background: linear-gradient(to right, #0f0f0f, #1c1c1c);
       color: #fff;
       display: flex;
       flex-direction: column;
@@ -21,44 +22,95 @@
       align-items: center;
       height: 100vh;
       text-align: center;
+      padding: 20px;
     }
+
     h1 {
-      font-size: 5rem;
+      font-size: 4.5rem;
       color: #e50914;
-      margin-bottom: 40px;
+      margin-bottom: 30px;
+      text-shadow: 2px 2px 8px rgba(0,0,0,0.6);
     }
+
     .input-group {
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 18px;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 30px;
+      border-radius: 16px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
       width: 90%;
       max-width: 400px;
     }
+
     input[type="text"] {
       padding: 14px;
       font-size: 1rem;
       border: none;
-      border-radius: 5px;
+      border-radius: 10px;
+      background-color: #2b2b2b;
+      color: #fff;
     }
+
+    input::placeholder {
+      color: #aaa;
+    }
+
     button {
       padding: 14px;
       font-size: 1rem;
+      font-weight: bold;
       border: none;
-      border-radius: 5px;
-      background-color: #e50914;
+      border-radius: 10px;
+      background: linear-gradient(to right, #e50914, #b0060f);
       color: white;
       cursor: pointer;
-      transition: background-color 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.3s;
     }
+
     button:hover {
-      background-color: #f40612;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(229, 9, 20, 0.4);
     }
+
+    button:active::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 200%;
+      height: 200%;
+      background: rgba(255, 255, 255, 0.2);
+      transform: translate(-50%, -50%) scale(0);
+      animation: clickEffect 0.5s ease-out forwards;
+      border-radius: 50%;
+    }
+
+    @keyframes clickEffect {
+      to {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0;
+      }
+    }
+
+    .responsive {
+      width: 220px;
+      height: auto;
+      margin-bottom: 30px;
+      filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.5));
+    }
+
     footer {
-        text-align: center;
-        padding: 3px;
-        background-color: #141414;
-        color: #808080;
-     }
+      text-align: center;
+      padding: 15px 5px;
+      color: #777;
+      font-size: 13px;
+    }
+
     #animatedTitle {
       font-size: 3.5rem;
       color: #e50914;
@@ -75,31 +127,17 @@
     @keyframes blink {
       50% { border-color: transparent; }
     }
-   
+
     @media (max-width: 600px) {
-      h1 {
-        font-size: 5rem;
+      .input-group {
+        padding: 20px;
       }
-      footer {
-        text-align: center;
-        padding: 15px;
-        font-size: 11px;
-        background-color: #141414;
-        color: #808080;
-      }
-      .responsive {
-        width: 100%;
-        height: auto;
-        padding: 16%;
-        padding-top: 0;
-        padding-bottom: 20px;
-      }
-      
+    }
   </style>
 </head>
 <body>
   <h1 id="animatedTitle"></h1>
-  <img src="drish1.png" alt="Nature" class="responsive" width="275px" height="275px">
+  <img src="drish1.png" alt="DRISH Logo" class="responsive" />
   <div class="input-group">
     <input type="text" id="nicknameInput" placeholder="Your Nickname" required />
     <input type="text" id="roomInput" placeholder="Room ID" required />
@@ -107,15 +145,14 @@
     <button onclick="joinRoom()">Join Room</button>
   </div>
   <footer>
-    <p style="padding-top:20px;">All Copyrights Owned By Harsha / Since 25.06.2023</p>
+    <p>&copy; Harsha | Since 25.06.2023</p>
   </footer>
-  <script>
-    <script>
+ <script>
   const title = "DRISH • BY HARSHA & AAKASH";
   let i = 0;
 
   function typeTitle() {
-  if (i < title.length) {
+    if (i < title.length) {
       document.getElementById("animatedTitle").innerHTML += title.charAt(i);
       i++;
       setTimeout(typeTitle, 100);
@@ -142,5 +179,6 @@
     }
   }
 </script>
+
 </body>
 </html>
