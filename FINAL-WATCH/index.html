@@ -59,6 +59,23 @@
         background-color: #141414;
         color: #808080;
      }
+    #animatedTitle {
+      font-size: 3.5rem;
+      color: #e50914;
+      text-shadow: 2px 2px 8px rgba(0,0,0,0.6);
+      margin-bottom: 20px;
+      letter-spacing: 1px;
+      border-right: 2px solid #e50914;
+      white-space: nowrap;
+      overflow: hidden;
+      width: fit-content;
+      animation: blink 0.75s step-end infinite;
+    }
+    
+    @keyframes blink {
+      50% { border-color: transparent; }
+    }
+   
     @media (max-width: 600px) {
       h1 {
         font-size: 5rem;
@@ -77,9 +94,11 @@
         padding-top: 0;
         padding-bottom: 20px;
       }
+      
   </style>
 </head>
 <body>
+  <h1 id="animatedTitle"></h1>
   <img src="drish1.png" alt="Nature" class="responsive" width="275px" height="275px">
   <div class="input-group">
     <input type="text" id="nicknameInput" placeholder="Your Nickname" required />
@@ -91,21 +110,37 @@
     <p style="padding-top:20px;">All Copyrights Owned By Harsha / Since 25.06.2023</p>
   </footer>
   <script>
-    function createRoom() {
-      const roomId = document.getElementById('roomInput').value.trim();
-      const nickname = document.getElementById('nicknameInput').value.trim();
-      const url = `/room.html?room=${roomId}&host=1&name=${encodeURIComponent(nickname)}`;
+    <script>
+  const title = "DRISH • BY HARSHA & AAKASH";
+  let i = 0;
+
+  function typeTitle() {
+  if (i < title.length) {
+      document.getElementById("animatedTitle").innerHTML += title.charAt(i);
+      i++;
+      setTimeout(typeTitle, 100);
+    }
+  }
+
+  window.onload = function () {
+    typeTitle();
+  };
+
+  function createRoom() {
+    const roomId = document.getElementById('roomInput').value.trim();
+    const nickname = document.getElementById('nicknameInput').value.trim();
+    const url = `/room.html?room=${roomId}&host=1&name=${encodeURIComponent(nickname)}`;
+    window.location.href = url;
+  }
+
+  function joinRoom() {
+    const roomId = document.getElementById('roomInput').value.trim();
+    const nickname = document.getElementById('nicknameInput').value.trim();
+    if (roomId && nickname) {
+      const url = `/room.html?room=${roomId}&name=${encodeURIComponent(nickname)}`;
       window.location.href = url;
     }
-
-    function joinRoom() {
-      const roomId = document.getElementById('roomInput').value.trim();
-      const nickname = document.getElementById('nicknameInput').value.trim();
-      if (roomId && nickname) {
-        const url = `/room.html?room=${roomId}&name=${encodeURIComponent(nickname)}`;
-        window.location.href = url;
-      }
-    }
-  </script>
+  }
+</script>
 </body>
 </html>
