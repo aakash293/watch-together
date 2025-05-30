@@ -156,6 +156,39 @@ button:active::after {
 .chat-input input {
   flex: 1;
 }
+.chat-box p {
+  max-width: 70%;
+  padding: 10px 15px;
+  margin-bottom: 10px;
+  border-radius: 20px;
+  line-height: 1.4;
+  display: inline-block;
+  clear: both;
+  word-wrap: break-word;
+  animation: fadeIn 0.3s ease-in;
+}
+
+/* Style for your own messages */
+.chat-box p.self {
+  background: #e50914;
+  color: white;
+  margin-left: auto;
+  border-bottom-right-radius: 4px;
+}
+
+/* Style for other users' messages */
+.chat-box p.other {
+  background: #333;
+  color: #f0f0f0;
+  margin-right: auto;
+  border-bottom-left-radius: 4px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 .bottom-nav {
   position: fixed;
   bottom: 0;
@@ -193,7 +226,8 @@ button:active::after {
 }
 @media (max-width: 768px) {
   .controls, .camera-container {
-    flex-direction: column;
+    flex-direction: row;
+    flex-warp: warp;
     align-items: center;
   }
   input[type="text"] {
@@ -205,6 +239,12 @@ button:active::after {
         align-content: center;
         gap: 10px;
         }
+  #userList{
+    padding-left: 20px;
+    display: flex;
+    justify-content: flex-start;
+    gap: 10%;
+  }
 }
 </style>
 </head>
@@ -495,6 +535,7 @@ socket.on('chat', (msg) => {
     const p = document.createElement('p');
     p.textContent = text;
     chatBox.appendChild(p);
+    p.className = text.startsWith(nickname + ':') ? 'self' : 'other';
     chatBox.scrollTop = chatBox.scrollHeight;
 
     if (!text.startsWith(nickname + ':')) {
