@@ -5,130 +5,83 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Create or Join Room</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-  <style>
-/* Splash Screen */
-#splash-screen {
-  position: fixed;
-  inset: 0;
-  background: #1c1c1c;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-  animation: fadeOutSplash 2.5s ease forwards 2s;
-}
-#splash-screen img {
-  width: 150px;
-  height: auto;
-  animation: popLogo 1.5s ease-out;
-}
-#splash-screen h1 {
-  color: #ff6a00;
-  font-size: 2.5rem;
-  margin-top: 20px;
-  font-weight: bold;
-  animation: slideUpText 1s ease-out 0.4s;
-}
-@keyframes popLogo {
-  0% { transform: scale(0.7); opacity: 0; }
-  50% { transform: scale(1.05); opacity: 1; }
-  100% { transform: scale(1); }
-}
-@keyframes slideUpText {
-  0% { transform: translateY(20px); opacity: 0; }
-  100% { transform: translateY(0); opacity: 1; }
-}
-@keyframes fadeOutSplash {
-  to { opacity: 0; visibility: hidden; }
-}
-
-/* Main UI */
-body {
-  margin: 0;
-  padding: 0;
-  background: #1c1c1c;
-  color: #f0f0f0;
-  font-family: 'Roboto', sans-serif;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-}
-h1 {
-  font-size: 3.5rem;
-  color: #ff6a00;
-  margin-bottom: 40px;
-  text-shadow: 1px 1px 2px #000;
-}
-.input-group {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  width: 90%;
-  max-width: 400px;
-  background: #1e1e1e;
-  padding: 30px;
-  border-radius: 20px;
-  box-shadow: 10px 10px 30px #141414, -10px -10px 30px #262626;
-}
-input[type="text"] {
-  padding: 14px;
-  border: none;
-  border-radius: 12px;
-  background: #1c1c1c;
-  color: white;
-  font-size: 1rem;
-  box-shadow: inset 4px 4px 8px #141414, inset -4px -4px 8px #262626;
-}
-button {
-  padding: 14px;
-  font-size: 1rem;
-  font-weight: bold;
-  border: none;
-  border-radius: 12px;
-  background: #1c1c1c;
-  color: #ff6a00;
-  cursor: pointer;
-  box-shadow: 6px 6px 12px #141414, -6px -6px 12px #262626;
-  transition: all 0.3s ease;
-}
-button:hover {
-  background: #ff6a00;
-  color: #000;
-  box-shadow: inset 2px 2px 6px #d45500, inset -2px -2px 6px #ff8833;
-}
-footer {
-  text-align: center;
-  padding: 15px;
-  font-size: 12px;
-  color: #888;
-}
-.responsive {
-  width: 160px;
-  height: auto;
-  margin-bottom: 20px;
-}
-@media (max-width: 600px) {
-  h1 {
-    font-size: 2.5rem;
-  }
-  .input-group {
-    padding: 20px;
-  }
-}
-</style>
-
-
+ <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Roboto', sans-serif;
+      background-color: #141414;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      text-align: center;
+    }
+    h1 {
+      font-size: 5rem;
+      color: #e50914;
+      margin-bottom: 40px;
+    }
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      width: 90%;
+      max-width: 400px;
+    }
+    input[type="text"] {
+      padding: 14px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 5px;
+    }
+    button {
+      padding: 14px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 5px;
+      background-color: #e50914;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #f40612;
+    }
+    footer {
+        text-align: center;
+        padding: 3px;
+        background-color: #141414;
+        color: #808080;
+     }
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 5rem;
+      }
+      footer {
+        text-align: center;
+        padding: 15px;
+        font-size: 11px;
+        background-color: #141414;
+        color: #808080;
+      }
+      .responsive {
+        width: 100%;
+        height: auto;
+        padding: 16%;
+        padding-top: 0;
+        padding-bottom: 20px;
+      }
+  </style>
 </head>
 <body>
-<div id="splash-screen">
-  <img src="drish1.png" alt="Logo" />
-  <h1>DRISH</h1>
-</div>
-<div class="input-group">
+  <img src="drish1.png" alt="Nature" class="responsive" width="275px" height="275px">
+  <div class="input-group">
     <input type="text" id="nicknameInput" placeholder="Your Nickname" required />
     <input type="text" id="roomInput" placeholder="Room ID" required />
     <button onclick="createRoom()">Create Room</button>
