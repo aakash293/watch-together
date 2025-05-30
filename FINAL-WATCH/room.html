@@ -8,199 +8,194 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <style>
-     * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    body {
-      font-family: 'Roboto', sans-serif;
-      background: #1c1c1c;
-      color: #f0f0f0;
-    }
-    header {
-      background: #1c1c1c;
-      color: #ff6a00;
-      padding: 20px;
-      font-size: 24px;
-      font-weight: 700;
-      text-align: center;
-      box-shadow: inset 4px 4px 10px #141414, inset -4px -4px 10px #242424;
-      border-bottom: 1px solid #333;
-      position: sticky;
-      top: 0;
-      z-index: 10;
-    }
-    .container {
-      max-width: 1200px;
-      margin: 40px auto;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 30px;
-    }
-    .video-wrapper {
-      position: relative;
-      padding-top: 56.25%;
-      background: #1e1e1e;
-      border-radius: 20px;
-      overflow: hidden;
-      box-shadow: 10px 10px 20px #131313, -10px -10px 20px #2b2b2b;
-    }
-    .video-wrapper video {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-    }
-    .controls {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 16px;
-      background: #1e1e1e;
-      border-radius: 16px;
-      padding: 20px;
-      box-shadow: inset 6px 6px 12px #141414, inset -6px -6px 12px #292929;
-    }
-    input[type="text"],
-    input[type="file"] {
-      padding: 12px;
-      border-radius: 12px;
-      background: #1c1c1c;
-      border: none;
-      color: white;
-      width: 280px;
-      box-shadow: inset 4px 4px 8px #141414, inset -4px -4px 8px #262626;
-    }
-    button {
-      padding: 12px 28px;
-      border-radius: 12px;
-      background: #1c1c1c;
-      color: #ff6a00;
-      border: none;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      box-shadow: 6px 6px 12px #141414, -6px -6px 12px #262626;
-    }
-    button:hover {
-      color: white;
-      background: #ff6a00;
-      box-shadow: inset 2px 2px 5px #d45500, inset -2px -2px 5px #ff8833;
-    }
-    button:active {
-      transform: scale(0.98);
-    }
-    .camera-container,
-    #camera-local {
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-      flex-wrap: wrap;
-    }
-    #remoteVideos video,
-    #localVideo,
-    .placeholder {
-      width: 160px;
-      height: 160px;
-      border-radius: 16px;
-      background: #1a1a1a;
-      object-fit: cover;
-      box-shadow: 6px 6px 12px #141414, -6px -6px 12px #262626;
-    }
-    #remoteVideos video,
-    #localVideo {
-      transform: scaleX(-1);
-    }
-    .placeholder {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-style: italic;
-      color: #888;
-    }
-    .chat-box {
-      background: #1e1e1e;
-      padding: 15px;
-      border-radius: 12px;
-      height: 250px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      box-shadow: inset 4px 4px 8px #141414, inset -4px -4px 8px #262626;
-    }
-    .chat-box p {
-      background: #2a2a2a;
-      color: white;
-      padding: 10px 14px;
-      border-radius: 16px;
-      max-width: 80%;
-      animation: bubbleIn 0.4s ease-out;
-      box-shadow: 4px 4px 8px #141414, -4px -4px 8px #262626;
-    }
-    .chat-box p:nth-child(even) {
-      align-self: flex-end;
-      background: #ff6a00;
-      color: #000;
-    }
-    @keyframes bubbleIn {
-      from { opacity: 0; transform: translateY(10px) scale(0.95); }
-      to { opacity: 1; transform: translateY(0) scale(1); }
-    }
-    .chat-input {
-      display: flex;
-      gap: 10px;
-      margin-top: 10px;
-    }
-    .chat-input input {
-      flex: 1;
-    }
-    .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      width: 100%;
-      background: #1c1c1c;
-      display: flex;
-      justify-content: space-around;
-      padding: 14px 0;
-      box-shadow: inset 4px 4px 10px #141414, inset -4px -4px 10px #262626;
-      z-index: 100;
-    }
-    .bottom-nav button {
-      background: none;
-      border: none;
-      color: #ff6a00;
-      font-size: 22px;
-      transition: transform 0.2s;
-    }
-    .bottom-nav button:hover {
-      transform: scale(1.3);
-      color: white;
-    }
-    #chatNotification {
-      background: #ff6a00;
-      padding: 6px 12px;
-      font-size: 12px;
-      border-radius: 10px;
-      margin-left: 15px;
-      animation: fadeInOut 4s forwards;
-      box-shadow: 0 0 10px #ff6a00;
-    }
-    @keyframes fadeInOut {
-      0% { opacity: 0; transform: translateY(-5px); }
-      10%, 90% { opacity: 1; transform: translateY(0); }
-      100% { opacity: 0; transform: translateY(-5px); }
-    }
-    @media (max-width: 768px) {
-      .controls, .camera-container {
-        flex-direction: column;
-        align-items: center;
-      }
-      input[type="text"] {
-        width: 100%;
-      }
-    }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+body {
+  font-family: 'Roboto', sans-serif;
+  background: #121212;
+  color: #f0f0f0;
+  line-height: 1.6;
+}
+header {
+  background: #000000dd;
+  padding: 16px;
+  text-align: center;
+  font-size: 28px;
+  font-weight: bold;
+  color: #e50914;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  letter-spacing: 2px;
+}
+.container {
+  max-width: 1100px;
+  margin: 30px auto 100px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+.video-wrapper {
+  position: relative;
+  padding-top: 56.25%;
+  background-color: #000;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.7);
+}
+.video-wrapper video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 15px;
+}
+input[type="text"],
+input[type="file"] {
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background: #1e1e1e;
+  color: white;
+  width: 280px;
+}
+button {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(to right, #e50914, #b0060f);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+button:hover {
+  background: linear-gradient(to right, #f40612, #d30b10);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(229,9,20,0.4);
+}
+button:active::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 140%;
+  height: 140%;
+  background: rgba(255,255,255,0.2);
+  transform: translate(-50%, -50%) scale(0);
+  animation: clickPulse 0.6s ease-out forwards;
+  border-radius: 50%;
+}
+@keyframes clickPulse {
+  to { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+}
+.camera-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+}
+.camera-container h3 {
+  width: 100%;
+  text-align: center;
+  font-size: 18px;
+}
+#remoteVideos video,
+#localVideo,
+.placeholder {
+  width: 160px;
+  height: 160px;
+  border-radius: 12px;
+  background: #000;
+  object-fit: cover;
+}
+#remoteVideos video,
+#localVideo {
+  transform: scaleX(-1);
+}
+.placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: #999;
+  font-style: italic;
+}
+.chat-box {
+  background: #1e1e1e;
+  padding: 15px;
+  border-radius: 10px;
+  height: 250px;
+  overflow-y: auto;
+}
+.chat-input {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+.chat-input input {
+  flex: 1;
+}
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background: #1f1f1f;
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 0;
+  border-top: 1px solid #333;
+}
+.bottom-nav button {
+  background: none;
+  border: none;
+  font-size: 22px;
+  color: white;
+  transition: color 0.3s;
+}
+.bottom-nav button:hover {
+  color: #e50914;
+}
+#chatNotification {
+  animation: fadeInOut 4s forwards;
+  background: #e50914;
+  padding: 6px 12px;
+  font-size: 12px;
+  border-radius: 8px;
+  margin-left: 15px;
+}
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translateY(-5px); }
+  10%, 90% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-5px); }
+}
+@media (max-width: 768px) {
+  .controls, .camera-container {
+    flex-direction: column;
+    align-items: center;
+  }
+  input[type="text"] {
+    width: 100%;
+  }
+}
 </style>
 </head>
 <body>
