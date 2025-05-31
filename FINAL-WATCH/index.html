@@ -119,36 +119,104 @@
       .input-group {
         padding: 20px;
       }
+      .splash-screen {
+          position: fixed;
+          top: 0; left: 0;
+          width: 100%; height: 100%;
+          background: #000;
+          z-index: 9999;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-direction: column;
+          animation: fadeOutSplash 2.5s ease-out forwards;
+          animation-delay: 2.5s;
+          overflow: hidden;
+        }
+        
+        .splash-animation {
+          width: 200px;
+          height: 200px;
+          border-radius: 50%;
+          background: radial-gradient(circle, rgba(255,255,255,0.2), transparent 70%);
+          animation: pulse 2s ease-out;
+        }
+        
+        .splash-logo {
+          width: 200px;
+          opacity: 0;
+          animation: fadeIn 1s ease-in 1.5s forwards;
+          margin-top: 20px;
+        }
+        
+        .app-title {
+          font-size: 4rem;
+          color: #e50914;
+          margin: 40px 0 20px;
+          font-weight: 700;
+          letter-spacing: 2px;
+          display: none;
+          animation: fadeIn 1s ease-in forwards;
+        }
+        
+        @keyframes pulse {
+          0% { transform: scale(0.3); opacity: 0; }
+          50% { transform: scale(1.1); opacity: 1; }
+          100% { transform: scale(1); opacity: 0.4; }
+        }
+        
+        @keyframes fadeIn {
+          to { opacity: 1; }
+        }
+        
+        @keyframes fadeOutSplash {
+          to { opacity: 0; visibility: hidden; }
+        }
+
     }
   </style>
 </head>
 <body>
-  <img src="drish1.png" alt="DRISH Logo" class="responsive" />
-  <div class="input-group">
+  <div class="splash-screen" id="splash">
+    <div class="splash-animation"></div>
+    <img src="drish1.png" alt="DRISH Logo" class="splash-logo" id="logoImage" />
+  </div>
+
+  <img src="drish1.png" alt="DRISH Logo" class="responsive" style="display: none;" />
+
+  <div class="input-group" id="mainForm" style="display: none;">
     <input type="text" id="nicknameInput" placeholder="Your Nickname" required />
     <input type="text" id="roomInput" placeholder="Room ID" required />
     <button onclick="createRoom()">Create Room</button>
     <button onclick="joinRoom()">Join Room</button>
   </div>
-  <footer>
-    <p>&copy; Harsha | Since 25.06.2023</p>
-  </footer>
+
+  <footer style="display: none;" id="mainFooter">&copy; Harsha | Since 25.06.2023</footer>
   <script>
-    function createRoom() {
-      const roomId = document.getElementById('roomInput').value.trim();
-      const nickname = document.getElementById('nicknameInput').value.trim();
-      const url = `/room.html?room=${roomId}&host=1&name=${encodeURIComponent(nickname)}`;
+  function createRoom() {
+    const roomId = document.getElementById('roomInput').value.trim();
+    const nickname = document.getElementById('nicknameInput').value.trim();
+    const url = `/room.html?room=${roomId}&host=1&name=${encodeURIComponent(nickname)}`;
+    window.location.href = url;
+  }
+
+  function joinRoom() {
+    const roomId = document.getElementById('roomInput').value.trim();
+    const nickname = document.getElementById('nicknameInput').value.trim();
+    if (roomId && nickname) {
+      const url = `/room.html?room=${roomId}&name=${encodeURIComponent(nickname)}`;
       window.location.href = url;
     }
+  }
 
-    function joinRoom() {
-      const roomId = document.getElementById('roomInput').value.trim();
-      const nickname = document.getElementById('nicknameInput').value.trim();
-      if (roomId && nickname) {
-        const url = `/room.html?room=${roomId}&name=${encodeURIComponent(nickname)}`;
-        window.location.href = url;
-      }
-    }
-  </script>
+  // Reveal main UI after splash
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      document.querySelector('.app-title').style.display = 'block';
+      document.getElementById('mainForm').style.display = 'flex';
+      document.getElementById('mainFooter').style.display = 'block';
+    }, 2700); // after splash fade
+  });
+</script>
 </body>
 </html>
