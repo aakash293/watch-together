@@ -58,22 +58,44 @@
       margin-top: 20px;
     }
     input[type="text"], input[type="file"] {
-      padding: 10px;
+      padding: 12px;
       border: none;
-      border-radius: 6px;
+      border-radius: 8px;
       background: #1e1e1e;
       color: white;
+      width: 280px;
     }
     button {
-      padding: 10px 20px;
+      padding: 12px 24px;
       background: linear-gradient(to right, #e50914, #b0060f);
       color: white;
       border: none;
-      border-radius: 6px;
+      border-radius: 8px;
+      font-weight: 600;
       cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
     }
     button:hover {
       background: linear-gradient(to right, #f40612, #d30b10);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 20px rgba(229,9,20,0.4);
+    }
+    button:active::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 140%;
+      height: 140%;
+      background: rgba(255,255,255,0.2);
+      transform: translate(-50%, -50%) scale(0);
+      animation: clickPulse 0.6s ease-out forwards;
+      border-radius: 50%;
+    }
+    @keyframes clickPulse {
+      to { transform: translate(-50%, -50%) scale(1); opacity: 0; }
     }
     .chat-box {
       background: #1e1e1e;
@@ -90,22 +112,80 @@
     .chat-input input {
       flex: 1;
     }
-    .chat-box p.self {
+    .chat-box p {
+      max-width: 70%;
+      padding: 10px 15px;
+      margin-bottom: 10px;
+      border-radius: 20px;
+      line-height: 1.4;
+      display: block;
+      clear: both;
+      word-wrap: break-word;
+      animation: fadeIn 0.3s ease-in;
+    }
+   .chat-box p.self {
       background: #e50914;
       color: white;
       margin-left: auto;
-      border-radius: 20px;
-      padding: 10px;
-      max-width: 60%;
+      border-bottom-right-radius: 4px;
     }
+    
+    /* Style for other users' messages */
     .chat-box p.other {
       background: #333;
-      color: white;
+      color: #f0f0f0;
       margin-right: auto;
-      border-radius: 20px;
-      padding: 10px;
-      max-width: 60%;
+      border-bottom-left-radius: 4px;
     }
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      background: #1f1f1f;
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0;
+      border-top: 1px solid #333;
+    }
+    
+    .bottom-nav button {
+      background: none;
+      border: none;
+      font-size: 22px;
+      color: white;
+      padding : 0;
+      transition: color 0.3s;
+    }
+    .bottom-nav button:hover {
+      color: #e50914;
+    }
+    #chatNotification {
+      animation: fadeInOut 4s forwards;
+      background: #e50914;
+      padding: 6px 12px;
+      font-size: 12px;
+      border-radius: 8px;
+      margin-left: 15px;
+    }
+    
+    @keyframes fadeInOut {
+      0% { opacity: 0; transform: translateY(-5px); }
+      10%, 90% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(-5px); }
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+@media (max-width: 768px) {
+    #userList{
+    padding-left: 20px;
+    display: flex;
+    justify-content: flex-start;
+    gap: 10%;
+  }
+}
   </style>
 </head>
 <body>
@@ -145,6 +225,11 @@
       <button onclick="sendMessage()"><i class="fa fa-paper-plane-o"></i></button>
     </div>
   </div>
+   <div id="bottomNav" class="bottom-nav">
+                <button onclick="showTab('users')"><i class="fa fa-user-circle-o" style="font-size:24px"></i></button>
+                <button onclick="showTab('chat')"><i class="fa fa-envelope-o" style="font-size:24px"></i></button>
+                <button onclick="showTab('search')"><i class="fa fa-gear" style="font-size:24px"></i></button>
+    </div>
 
   <script src="/socket.io/socket.io.js"></script>
   <script>
@@ -180,6 +265,14 @@
       socket.emit('set-video', { room: roomId, link });
     }
 
+    function showTab(tabName) {
+    const tabs = ['users', 'chat', 'search'];
+    tabs.forEach(t => {
+        const el = document.getElementById('tab-' + t);
+        if (el) el.style.display = (t === tabName ? 'block' : 'none');
+        });
+    }
+    
     function sendMessage() {
       const input = document.getElementById('chatInput');
       const message = input.value.trim();
@@ -188,7 +281,7 @@
         input.value = '';
       }
     }
-
+  
     socket.on('chat', (msg) => {
       const chatBox = document.getElementById('chat');
       const text = typeof msg === 'string' ? msg : msg.msg;
@@ -270,9 +363,32 @@
         if (i === 0) track.default = true;
         video.appendChild(track);
       });
+      // Optional: force showing the first track
+        const checkReady = setInterval(() => {
+        const video = document.getElementById('videoPlayer');
+        const tracks = video.textTracks;
+        if (tracks.length > 0) {
+          tracks[0].mode = 'showing'; // Force it to display
+          clearInterval(checkReady);
+        }
+      }, 500);
     }
+    
 
     socket.on('subtitle-set', ({ subtitles }) => injectSubtitles(subtitles));
+    const video = document.getElementById('videoPlayer');
+    video.addEventListener('play', () => { if (!suppressEvent) socket.emit('sync-video', { room: roomId, action: 'play', time: video.currentTime }); });
+    video.addEventListener('pause', () => { if (!suppressEvent) socket.emit('sync-video', { room: roomId, action: 'pause', time: video.currentTime }); });
+    video.addEventListener('seeking', () => { if (!suppressEvent) socket.emit('sync-video', { room: roomId, action: 'seek', time: video.currentTime }); });
+    socket.on('sync-video', ({ action, time }) => {
+        suppressEvent = true;
+        if (Math.abs(video.currentTime - time) > 0.3) video.currentTime = time;
+        if (action === 'play') video.play();
+        else if (action === 'pause') video.pause();
+        else if (action === 'seek') video.currentTime = time;
+        setTimeout(() => suppressEvent = false, 100);
+    });
   </script>
+  <audio id="chatSound" src="message.mp3" preload="auto"></audio>
 </body>
 </html>
