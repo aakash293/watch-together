@@ -208,7 +208,7 @@
                   <track id="subtitleTrack" kind="subtitles" srclang="en" label="English">
             </video>
         </div>
-       <div id="tab-chat" class="tab-content" style="display: none;">
+       <div id="tab-chat" class="tab-content" ">
             <div class="chat-container">
             <h3>Users in Room</h3>
             <ul id="userList"></ul><br>
@@ -241,7 +241,7 @@
        </div>
      </div>
     <div id="bottomNav" class="bottom-nav">
-                <button onclick="showTab('users')"><i class="fa fa-user-circle-o" style="font-size:24px"></i></button>
+                <button onclick="showTab('chat')"><i class="fa fa-user-circle-o" style="font-size:24px"></i></button>
                 <button onclick="showTab('chat')"><i class="fa fa-envelope-o" style="font-size:24px"></i></button>
                 <button onclick="showTab('search')"><i class="fa fa-gear" style="font-size:24px"></i></button>
     </div>
@@ -281,7 +281,7 @@
     }
 
     function showTab(tabName) {
-    const tabs = ['users', 'chat', 'search'];
+    const tabs = ['chat', 'chat', 'search'];
     tabs.forEach(t => {
         const el = document.getElementById('tab-' + t);
         if (el) el.style.display = (t === tabName ? 'block' : 'none');
