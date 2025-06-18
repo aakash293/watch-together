@@ -134,6 +134,7 @@ io.on('connection', (socket) => {
     io.to(room).emit('user-list', Object.values(roomUsers[room]));
   });
 
+  
   socket.on('chat', ({ room, msg }) => {
     io.to(room).emit('chat', msg);
   });
@@ -154,9 +155,14 @@ io.on('connection', (socket) => {
     io.to(target).emit('ice-candidate', { from: socket.id, candidate });
   });
   
+  // socket.on('file-loaded', ({ room, name, filename }) => {
+  //   socket.to(room).emit('file-loaded', { name, filename });
+  // });
+  
   socket.on('file-loaded', ({ room, name, filename }) => {
-    socket.to(room).emit('file-loaded', { name, filename });
+    io.to(room).emit('file-loaded', { name, filename });
   });
+
   
   socket.on('set-video', ({ room, link }) => {
     socket.to(room).emit('set-video', { link });
