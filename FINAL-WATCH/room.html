@@ -227,8 +227,7 @@ button:active::after {
 @media (max-width: 768px) {
   .controls, .camera-container {
     display : flex;  
-    flex-warp: warp;
-    justify-content: space-evenly;
+    justify-content: start;
     align-items: center;
   }
   input[type="text"] {
@@ -325,6 +324,9 @@ let localStream;
 let suppressEvent = false;
 
 socket.emit('join', { room: roomId, name: nickname });
+// Notify others of new user
+socket.emit('chat', { room: roomId, msg: `👋 ${nickname} joined the room.` });
+
 
 async function startCamera() {
     try {
@@ -551,6 +553,15 @@ socket.on('chat', (msg) => {
         setTimeout(() => notification.style.display = 'none', 4000);
     }
 });
+socket.on('file-loaded', ({ name, filename }) => {
+    const chatBox = document.getElementById('chat');
+    const p = document.createElement('p');
+    p.textContent = `🎞️ ${name} loaded file: ${filename}`;
+    p.className = 'other'; // system-style message
+    chatBox.appendChild(p);
+    chatBox.scrollTop = chatBox.scrollHeight;
+});
+   
 
 socket.on('subtitle-set', ({ subtitles }) => {
   injectSubtitles(subtitles);
@@ -643,8 +654,12 @@ document.getElementById('localVideoInput').addEventListener('change', function(e
         const video = document.getElementById('videoPlayer');
         video.src = URL.createObjectURL(file);
         video.load();
+
+        // Inform others about the file name
+        socket.emit('file-loaded', { room: roomId, name: nickname, filename: file.name });
     }
 });
+
 
 function ensureVideoLoaded() {
   const video = document.getElementById('videoPlayer');
