@@ -553,6 +553,7 @@ socket.on('chat', (msg) => {
         setTimeout(() => notification.style.display = 'none', 4000);
     }
 });
+    
 socket.on('file-loaded', ({ name, filename }) => {
     const chatBox = document.getElementById('chat');
     const p = document.createElement('p');
@@ -654,9 +655,8 @@ document.getElementById('localVideoInput').addEventListener('change', function(e
         const video = document.getElementById('videoPlayer');
         video.src = URL.createObjectURL(file);
         video.load();
-
-        // Inform others about the file name
         socket.emit('file-loaded', { room: roomId, name: nickname, filename: file.name });
+        console.log(`Sent filename: ${file.name}`);
     }
 });
 
