@@ -154,6 +154,10 @@ io.on('connection', (socket) => {
     io.to(target).emit('ice-candidate', { from: socket.id, candidate });
   });
   
+  socket.on('file-loaded', ({ room, name, filename }) => {
+    socket.to(room).emit('file-loaded', { name, filename });
+  });
+  
   socket.on('set-video', ({ room, link }) => {
     socket.to(room).emit('set-video', { link });
   });
@@ -163,8 +167,7 @@ io.on('connection', (socket) => {
   socket.on('subtitle-set', ({ room, subtitles }) => {
   io.to(room).emit('subtitle-set', { subtitles });
   });
-
-
+  
   socket.on('video-action', ({ room, action, time }) => { 
     socket.to(room).emit('video-action', { action, time }); 
   });
@@ -175,8 +178,7 @@ io.on('connection', (socket) => {
   socket.on('camera-toggle', ({ room, on }) => {
   socket.to(room).emit('camera-toggle', { from: socket.id, on });
 });
-
-
+  
   socket.on('disconnect', () => {
     const room = socket.room;
     if (room && roomUsers[room]) {
