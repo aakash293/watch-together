@@ -555,6 +555,7 @@ socket.on('chat', (msg) => {
 });
     
 socket.on('file-loaded', ({ name, filename }) => {
+    console.log(`Received file: ${filename} from ${name}`);
     const chatBox = document.getElementById('chat');
     const p = document.createElement('p');
     p.textContent = `🎞️ ${name} loaded file: ${filename}`;
