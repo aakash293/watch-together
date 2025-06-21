@@ -330,7 +330,7 @@ socket.emit('chat', { room: roomId, msg: `👋 ${nickname} joined the room.` });
 
 async function startCamera() {
     try {
-        localStream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 640 }, height: { ideal: 480 } }, audio: false });
+        localStream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 320 }, height: { ideal: 240 }, frameRate: { ideal: 15, max: 20 } }, audio: false });
         document.getElementById('localVideo').srcObject = localStream;
         socket.emit('ready', roomId);
     } catch (e) {
@@ -354,7 +354,7 @@ function toggleCamera() {
         socket.emit('camera-toggle', { room: roomId, on: false });
         for (const id in peers) { peers[id].close(); delete peers[id]; }
     } else {
-        navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 640 }, height: { ideal: 480 } }, audio: false }).then(stream => {
+        navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 320 }, height: { ideal: 240 },frameRate: { ideal: 15, max: 20 } }, audio: false }).then(stream => {
             localStream = stream;
             localVideo.srcObject = stream;
             btn.textContent = 'Turn Camera Off';
@@ -390,7 +390,16 @@ function createPeer(id) {
     if (localStream) {
         localStream.getTracks().forEach(track => peer.addTrack(track, localStream));
     }
-
+    
+    peer.getSenders().forEach(sender => {
+    if (sender.track && sender.track.kind === 'video') {
+        const parameters = sender.getParameters();
+        if (!parameters.encodings) parameters.encodings = [{}];
+        parameters.encodings[0].maxBitrate = 150 * 1000; // 150 kbps
+        sender.setParameters(parameters).catch(e => console.warn('Bitrate set failed:', e));
+        }
+    });
+    
     peer.onicecandidate = e => {
         if (e.candidate) {
             socket.emit('ice-candidate', { target: id, candidate: e.candidate });
