@@ -391,15 +391,6 @@ function createPeer(id) {
         localStream.getTracks().forEach(track => peer.addTrack(track, localStream));
     }
     
-    peer.getSenders().forEach(sender => {
-    if (sender.track && sender.track.kind === 'video') {
-        const parameters = sender.getParameters();
-        if (!parameters.encodings) parameters.encodings = [{}];
-        parameters.encodings[0].maxBitrate = 150 * 1000; // 150 kbps
-        sender.setParameters(parameters).catch(e => console.warn('Bitrate set failed:', e));
-        }
-    });
-    
     peer.onicecandidate = e => {
         if (e.candidate) {
             socket.emit('ice-candidate', { target: id, candidate: e.candidate });
