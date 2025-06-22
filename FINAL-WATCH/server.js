@@ -174,6 +174,10 @@ io.on('connection', (socket) => {
   io.to(room).emit('subtitle-set', { subtitles });
   });
   
+  socket.on('ping-keepalive', () => {
+  // Keep-alive ping received
+  });
+  
   socket.on('video-action', ({ room, action, time }) => { 
     socket.to(room).emit('video-action', { action, time }); 
   });
