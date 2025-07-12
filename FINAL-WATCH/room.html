@@ -600,7 +600,7 @@ socket.on('set-subtitle', ({ content }) => {
 // Send a keep-alive ping every 30 seconds
 setInterval(() => {
   socket.emit('ping-keepalive', { room: roomId });
-}, 30000); // 30 seconds
+}, 5000); // 30 seconds
     
 function uploadSubtitles() {
   const fileInput = document.getElementById('subtitleZip');
