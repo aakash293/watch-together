@@ -323,6 +323,14 @@ const remoteVideos = document.getElementById('remoteVideos');
 let localStream;
 let suppressEvent = false;
 
+function createSilentVideoTrack() {
+    const canvas = Object.assign(document.createElement('canvas'), { width: 320, height: 240 });
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = 'black';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    return canvas.captureStream(1).getVideoTracks()[0]; // 1fps dummy video track
+}
+
 socket.emit('join', { room: roomId, name: nickname });
 // Notify others of new user
 socket.emit('chat', { room: roomId, msg: `👋 ${nickname} joined the room.` });
@@ -347,13 +355,23 @@ function toggleCamera() {
     const btn = document.getElementById('cameraBtn');
 
     if (localStream && localVideo.srcObject) {
-        localStream.getTracks().forEach(track => track.stop());
-        localVideo.srcObject = null;
-        localStream = null;
+        // Replace camera stream with silent black dummy track
+        const silentTrack = createSilentVideoTrack();
+        localStream = new MediaStream([silentTrack]);
+        localVideo.srcObject = localStream;
+    
         btn.textContent = 'Turn Camera On';
         socket.emit('camera-toggle', { room: roomId, on: false });
-        for (const id in peers) { peers[id].close(); delete peers[id]; }
-    } else {
+    
+        for (const id in peers) {
+            if (peers[id]) peers[id].close();
+            delete peers[id];
+        }
+    
+        socket.emit('ready', roomId);
+    }
+
+    else {
         navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 320 }, height: { ideal: 240 },frameRate: { ideal: 15, max: 20 } }, audio: false }).then(stream => {
             localStream = stream;
             localVideo.srcObject = stream;
