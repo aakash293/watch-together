@@ -236,6 +236,9 @@ button:active::after {
   input[type="text"] {
     width: 100%;
   }
+  .video-js{
+      display: contents;
+  }
   #camera-local{
         display: flex;
         justify-content: space-evenly;
@@ -262,6 +265,7 @@ button:active::after {
      <video
           id="videoPlayer"
           class="video-js vjs-default-skin"
+          style="display: contents; "
           controls
           preload="auto"
           width="100%"
