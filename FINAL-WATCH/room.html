@@ -236,9 +236,10 @@ button:active::after {
   input[type="text"] {
     width: 100%;
   }
-  .video-js{
-      display: contents;
-  }
+  .video-js .vjs-tech {
+      object-fit: contain !important;
+      background: black;
+    }
   #camera-local{
         display: flex;
         justify-content: space-evenly;
@@ -270,7 +271,7 @@ button:active::after {
           preload="auto"
           width="100%"
           height="100%"
-          data-setup='{}'>
+          data-setup='{"techOrder": ["html5"]}'>
     </video>
     </div>
     <div class="container">
