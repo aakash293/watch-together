@@ -7,6 +7,10 @@
     <title>Watch Room</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <!-- Video.js CSS -->
+    <link href="https://vjs.zencdn.net/8.9.0/video-js.css" rel="stylesheet" />
+    <!-- Video.js JS -->
+    <script src="https://vjs.zencdn.net/8.9.0/video.min.js"></script>
     <style>
 * {
   margin: 0;
@@ -256,9 +260,16 @@ button:active::after {
         🔔</div>
     </header>
     <div class="video-wrapper">
-      <video id="videoPlayer" controls>
-        <track id="subtitleTrack" kind="subtitles" srclang="en" label="English">
-      </video>
+        <video
+          id="videoPlayer"
+          class="video-js vjs-default-skin"
+          controls
+          preload="auto"
+          width="100%"
+          height="100%"
+          data-setup='{}'>
+          <track id="subtitleTrack" kind="subtitles" srclang="en" label="English">
+        </video>
     </div>
     <div class="container">
       <div id="tab-users">
@@ -552,12 +563,12 @@ socket.on('user-disconnected', (id) => {
 });
 function playVideo() {
     video.play();
-    socket.emit('sync-video', { room: roomId, action: 'play', time: video.currentTime });
+    socket.emit('sync-video', { room: roomId, action: 'play', time: video.currentTime()});
 }
 
 function pauseVideo() {
     video.pause();
-    socket.emit('sync-video', { room: roomId, action: 'pause', time: video.currentTime });
+    socket.emit('sync-video', { room: roomId, action: 'pause', time: video.currentTime()});
 }
 
 function sendMessage() {
@@ -668,8 +679,8 @@ function uploadSubtitles() {
 }
 
 function injectSubtitles(subtitles) {
-  const video = document.getElementById('videoPlayer');
-  Array.from(video.querySelectorAll('track')).forEach(t => t.remove());
+  const videoEl = video.el(); // video is the video.js instance
+  Array.from(videoEl.querySelectorAll('track')).forEach(t => t.remove());
 
   subtitles.forEach((url, i) => {
     const track = document.createElement('track');
@@ -678,24 +689,23 @@ function injectSubtitles(subtitles) {
     track.label = `Subtitle ${i + 1}`;
     track.srclang = 'en';
     if (i === 0) track.default = true;
-    video.appendChild(track);
+    videoEl.appendChild(track);
   });
 
-  // Optional: force showing the first track
   const checkReady = setInterval(() => {
-  const video = document.getElementById('videoPlayer');
-  const tracks = video.textTracks;
-  if (tracks.length > 0) {
-    tracks[0].mode = 'showing'; // Force it to display
-    clearInterval(checkReady);
-  }
-}, 500);
+    const tracks = video.textTracks();
+    if (tracks.length > 0) {
+      tracks[0].mode = 'showing';
+      clearInterval(checkReady);
+    }
+  }, 500);
 }
+
 
 document.getElementById('localVideoInput').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (file) {
-        const video = document.getElementById('videoPlayer');
+        const videoEl = video.el();
         video.src = URL.createObjectURL(file);
         video.load();
         socket.emit('file-loaded', { room: roomId, name: nickname, filename: file.name });
@@ -705,7 +715,7 @@ document.getElementById('localVideoInput').addEventListener('change', function(e
 
 
 function ensureVideoLoaded() {
-  const video = document.getElementById('videoPlayer');
+  const videoEl = video.el();
   if (!video.src) {
     alert("Please load the video file first.");
     return false;
@@ -716,27 +726,38 @@ function ensureVideoLoaded() {
 function playVideo() {
     if (!ensureVideoLoaded()) return;
     video.play();
-    socket.emit('sync-video', { room: roomId, action: 'play', time: video.currentTime });
+    socket.emit('sync-video', { room: roomId, action: 'play', time: video.currentTime()});
 }
 
 function pauseVideo() {
     if (!ensureVideoLoaded()) return;
     video.pause();
-    socket.emit('sync-video', { room: roomId, action: 'pause', time: video.currentTime });
+    socket.emit('sync-video', { room: roomId, action: 'pause', time: video.currentTime()});
 }
+const video = videojs('videoPlayer');
 
-const video = document.getElementById('videoPlayer');
-video.addEventListener('play', () => { if (!suppressEvent) socket.emit('sync-video', { room: roomId, action: 'play', time: video.currentTime }); });
-video.addEventListener('pause', () => { if (!suppressEvent) socket.emit('sync-video', { room: roomId, action: 'pause', time: video.currentTime }); });
-video.addEventListener('seeking', () => { if (!suppressEvent) socket.emit('sync-video', { room: roomId, action: 'seek', time: video.currentTime }); });
-socket.on('sync-video', ({ action, time }) => {
-    suppressEvent = true;
-    if (Math.abs(video.currentTime - time) > 0.3) video.currentTime = time;
-    if (action === 'play') video.play();
-    else if (action === 'pause') video.pause();
-    else if (action === 'seek') video.currentTime = time;
-    setTimeout(() => suppressEvent = false, 100);
+// Sync Events
+video.on('play', () => {
+  if (!suppressEvent) socket.emit('sync-video', { room: roomId, action: 'play', time: video.currentTime() });
 });
+video.on('pause', () => {
+  if (!suppressEvent) socket.emit('sync-video', { room: roomId, action: 'pause', time: video.currentTime() });
+});
+video.on('seeking', () => {
+  if (!suppressEvent) socket.emit('sync-video', { room: roomId, action: 'seek', time: video.currentTime() });
+});
+
+// Socket Sync Handler
+socket.on('sync-video', ({ action, time }) => {
+  suppressEvent = true;
+  if (Math.abs(video.currentTime() - time) > 0.3) video.currentTime(time);
+  if (action === 'play') video.play();
+  else if (action === 'pause') video.pause();
+  else if (action === 'seek') video.currentTime(time);
+  setTimeout(() => suppressEvent = false, 100);
+});
+
+
 
 startCamera();
 </script>
