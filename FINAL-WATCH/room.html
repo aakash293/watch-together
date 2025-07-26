@@ -7,9 +7,6 @@
     <title>Watch Room</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <!-- video.js CSS and JS -->
-    <link href="https://vjs.zencdn.net/8.9.0/video-js.css" rel="stylesheet" />
-    <script src="https://vjs.zencdn.net/8.9.0/video.min.js"></script>
     <style>
 * {
   margin: 0;
@@ -236,10 +233,6 @@ button:active::after {
   input[type="text"] {
     width: 100%;
   }
-  .video-js .vjs-tech {
-      object-fit: contain !important;
-      background: black;
-    }
   #camera-local{
         display: flex;
         justify-content: space-evenly;
@@ -263,16 +256,9 @@ button:active::after {
         🔔</div>
     </header>
     <div class="video-wrapper">
-     <video
-          id="videoPlayer"
-          class="video-js vjs-default-skin"
-          style="display: contents; "
-          controls
-          preload="auto"
-          width="100%"
-          height="100%"
-          data-setup='{"techOrder": ["html5"]}'>
-    </video>
+      <video id="videoPlayer" controls>
+        <track id="subtitleTrack" kind="subtitles" srclang="en" label="English">
+      </video>
     </div>
     <div class="container">
       <div id="tab-users">
@@ -709,9 +695,9 @@ function injectSubtitles(subtitles) {
 document.getElementById('localVideoInput').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (file) {
-        const player = videojs('videoPlayer');
-        player.src({ src: URL.createObjectURL(file), type: file.type });
-        player.load();
+        const video = document.getElementById('videoPlayer');
+        video.src = URL.createObjectURL(file);
+        video.load();
         socket.emit('file-loaded', { room: roomId, name: nickname, filename: file.name });
         console.log(`Sent filename: ${file.name}`);
     }
@@ -729,48 +715,28 @@ function ensureVideoLoaded() {
 
 function playVideo() {
     if (!ensureVideoLoaded()) return;
-    const player = videojs('videoPlayer');
-    player.play();
-    socket.emit('sync-video', { room: roomId, action: 'play', time: player.currentTime() });
+    video.play();
+    socket.emit('sync-video', { room: roomId, action: 'play', time: video.currentTime });
 }
 
 function pauseVideo() {
     if (!ensureVideoLoaded()) return;
-    const player = videojs('videoPlayer');
-    player.pause();
-    socket.emit('sync-video', { room: roomId, action: 'pause', time: player.currentTime() });
+    video.pause();
+    socket.emit('sync-video', { room: roomId, action: 'pause', time: video.currentTime });
 }
 
-
-const player = videojs('videoPlayer');
-
-// Emit events
-player.on('play', () => {
-  if (!suppressEvent) {
-    socket.emit('sync-video', { room: roomId, action: 'play', time: player.currentTime() });
-  }
-});
-player.on('pause', () => {
-  if (!suppressEvent) {
-    socket.emit('sync-video', { room: roomId, action: 'pause', time: player.currentTime() });
-  }
-});
-player.on('seeking', () => {
-  if (!suppressEvent) {
-    socket.emit('sync-video', { room: roomId, action: 'seek', time: player.currentTime() });
-  }
-});
-
-// Receive sync events
+const video = document.getElementById('videoPlayer');
+video.addEventListener('play', () => { if (!suppressEvent) socket.emit('sync-video', { room: roomId, action: 'play', time: video.currentTime }); });
+video.addEventListener('pause', () => { if (!suppressEvent) socket.emit('sync-video', { room: roomId, action: 'pause', time: video.currentTime }); });
+video.addEventListener('seeking', () => { if (!suppressEvent) socket.emit('sync-video', { room: roomId, action: 'seek', time: video.currentTime }); });
 socket.on('sync-video', ({ action, time }) => {
-  suppressEvent = true;
-  if (Math.abs(player.currentTime() - time) > 0.3) player.currentTime(time);
-  if (action === 'play') player.play();
-  else if (action === 'pause') player.pause();
-  else if (action === 'seek') player.currentTime(time);
-  setTimeout(() => suppressEvent = false, 100);
+    suppressEvent = true;
+    if (Math.abs(video.currentTime - time) > 0.3) video.currentTime = time;
+    if (action === 'play') video.play();
+    else if (action === 'pause') video.pause();
+    else if (action === 'seek') video.currentTime = time;
+    setTimeout(() => suppressEvent = false, 100);
 });
-
 
 startCamera();
 </script>
