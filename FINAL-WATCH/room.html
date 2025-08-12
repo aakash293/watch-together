@@ -324,6 +324,33 @@ let localStream;
 let suppressEvent = false;
 let usingDummyTrack = false;
 
+async function ensureMutedAudioTrack() {
+    if (window._mutedAudioTrack) return; // only run once
+    try {
+        const s = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+        const t = s.getAudioTracks()[0];
+        t.enabled = false; // muted so no real audio
+        window._mutedAudioTrack = t;
+
+        // add to localStream if it exists, else create one
+        if (!localStream) {
+            localStream = new MediaStream();
+        }
+        localStream.addTrack(t);
+
+        // also attach to peers if already connected
+        for (const id in peers) {
+            const sender = peers[id].addTrack(t, localStream);
+            console.log(`Added muted audio track to peer ${id}`, sender);
+        }
+
+        console.log("Muted audio track added for keepalive");
+    } catch (e) {
+        console.warn("Muted audio track failed:", e);
+    }
+}
+
+    
 function createSilentVideoTrack() {
     const canvas = Object.assign(document.createElement('canvas'), { width: 320, height: 240 });
     const ctx = canvas.getContext('2d');
@@ -342,6 +369,7 @@ async function startCamera() {
         localStream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 320 }, height: { ideal: 240 }, frameRate: { ideal: 15, max: 20 } }, audio: false });
         document.getElementById('localVideo').srcObject = localStream;
         socket.emit('ready', roomId);
+        await ensureMutedAudioTrack();
     } catch (e) {
         console.error('Camera error:', e);
     }
