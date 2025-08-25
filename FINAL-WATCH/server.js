@@ -155,6 +155,22 @@ io.on('connection', (socket) => {
     io.to(target).emit('ice-candidate', { from: socket.id, candidate });
   });
   
+  socket.on("play", (data) => {
+    console.log("Play event from", socket.id, "in room", data.roomId);
+    socket.to(data.roomId).emit("play");
+  });
+
+  socket.on("pause", (data) => {
+    console.log("Pause event from", socket.id, "in room", data.roomId);
+    socket.to(data.roomId).emit("pause");
+  });
+
+  socket.on("seek", (data) => {
+    console.log("Seek event from", socket.id, "to", data.time);
+    socket.to(data.roomId).emit("seek", { time: data.time });
+  });
+
+  
   // socket.on('file-loaded', ({ room, name, filename }) => {
   //   socket.to(room).emit('file-loaded', { name, filename });
   // });
