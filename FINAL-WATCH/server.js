@@ -178,7 +178,10 @@ io.on('connection', (socket) => {
   socket.on('file-loaded', ({ room, name, filename }) => {
     io.to(room).emit('file-loaded', { name, filename });
   });
-
+ socket.on("fileLoaded", ({ room, who, filename }) => {
+    io.to(room).emit("fileLoaded", { who, filename });
+    io.to(room).emit("chat", `🎞️ ${who} loaded file: ${filename}`);
+  });
   
   socket.on('set-video', ({ room, link }) => {
     socket.to(room).emit('set-video', { link });
