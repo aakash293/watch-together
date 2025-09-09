@@ -181,6 +181,8 @@ io.on('connection', (socket) => {
  socket.on("fileLoaded", ({ room, who, filename }) => {
     io.to(room).emit("fileLoaded", { who, filename });
     io.to(room).emit("chat", `🎞️ ${who} loaded file: ${filename}`);
+    console.log('A user file loaded');
+
   });
   
   socket.on('set-video', ({ room, link }) => {
