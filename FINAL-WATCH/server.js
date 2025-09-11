@@ -130,6 +130,7 @@ io.on('connection', (socket) => {
 
     if (!roomUsers[room]) roomUsers[room] = {};
     roomUsers[room][socket.id] = name;
+    broadcastUserList(room);
 
     io.to(room).emit('user-list', Object.values(roomUsers[room]));
   });
@@ -209,6 +210,12 @@ io.on('connection', (socket) => {
   socket.on('camera-toggle', ({ room, on }) => {
   socket.to(room).emit('camera-toggle', { from: socket.id, on });
 });
+  socket.on('ping-alive', ({ room }) => {
+  if (roomUsers[room] && roomUsers[room][socket.id]) {
+    roomUsers[room][socket.id].lastSeen = Date.now();
+    broadcastUserList(room);
+  }
+});
   
   socket.on('disconnect', () => {
     const room = socket.room;
@@ -216,12 +223,23 @@ io.on('connection', (socket) => {
       delete roomUsers[room][socket.id];
       io.to(room).emit('user-list', Object.values(roomUsers[room]));
       io.to(room).emit('user-disconnected', socket.id);
+      broadcastUserList(room);
     }
     console.log('A user disconnected');
   });
 });
 
+function broadcastUserList(room) {
+  const now = Date.now();
+  const idleThreshold = 10000; // 10 seconds
 
+  const users = Object.values(roomUsers[room]).map(user => {
+    const status = (now - user.lastSeen < idleThreshold) ? "Active" : "Idle";
+    return { name: user.name, status };
+  });
+
+  io.to(room).emit('user-list', users);
+}
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
